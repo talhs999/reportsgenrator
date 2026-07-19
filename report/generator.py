@@ -147,7 +147,7 @@ async def generate_report(
     stolen_check = templated.get_stolen_check(registration)
     finance_check = templated.get_finance_check(registration)
     writeoff_check = templated.get_writeoff_check(registration)
-    valuation = templated.get_valuation_guidance()
+    valuation = templated.get_valuation_guidance(vehicle_data)
     structural = None
     mechanical = None
     safety = None
