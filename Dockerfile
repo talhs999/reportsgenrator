@@ -1,28 +1,5 @@
-# Use official Python image
-FROM python:3.10-slim
-
-# Install system dependencies for Playwright
-RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    libgconf-2-4 \
-    libxss1 \
-    libnss3 \
-    libnspr4 \
-    libasound2 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libdbus-1-3 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libgbm1 \
-    libpango-1.0-0 \
-    libcairo2 \
-    && rm -rf /var/lib/apt/lists/*
+# Use official Python image (bullseye is very stable and has all dependencies)
+FROM python:3.10-bullseye
 
 # Set working directory
 WORKDIR /app
@@ -31,7 +8,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers (Chromium only to save space)
+# Install Playwright browsers and all required system dependencies automatically
 RUN playwright install chromium
 RUN playwright install-deps chromium
 
@@ -41,8 +18,8 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p static/uploads static/downloads static/temp
 
-# Expose port (7860 is default for Hugging Face)
-EXPOSE 7860
+# Expose port
+EXPOSE 8000
 
-# Start Uvicorn server (bind to 0.0.0.0 and port 7860)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
+# Start Uvicorn server
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
