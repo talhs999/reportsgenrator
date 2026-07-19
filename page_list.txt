@@ -1,0 +1,52 @@
+27: /* ── Page Setup (A4 Print) ─────────────────────────────────── */
+47: /* ── Page Container ────────────────────────────────────────── */
+61: /* ── Page Header (repeating) ───────────────────────────────── */
+108: /* ── Page Footer (repeating) ───────────────────────────────── */
+109: .page-footer {
+721:     <div class="page-footer">
+723:         <span>Page 2 | {{ registration }}</span>
+768:     <div class="page-footer">
+770:         <span>Page 3 | {{ registration }}</span>
+832:     <div class="page-footer">
+834:         <span>Page 4 | {{ registration }}</span>
+878:     <div class="page-footer">
+880:         <span>Page 5 | {{ registration }}</span>
+973:     <div class="page-footer">
+975:         <span>Page 6 | {{ registration }}</span>
+1050:     <div class="page-footer">
+1052:         <span>Page 7 | {{ registration }}</span>
+1112:     <div class="page-footer">
+1114:         <span>Page 8 | {{ registration }}</span>
+1173:     <div class="page-footer">
+1175:         <span>Page 9 | {{ registration }}</span>
+1237:     <div class="page-footer">
+1239:         <span>Page 10 | {{ registration }}</span>
+1286:     <div class="page-footer">
+1288:         <span>Page 11 | {{ registration }}</span>
+1322:     <div class="page-footer">
+1324:         <span>Page 12 | {{ registration }}</span>
+1365:     <div class="page-footer">
+1367:         <span>Page 13 | {{ registration }}</span>
+1409:     <div class="page-footer">
+1411:         <span>Page 14 | {{ registration }}</span>
+1472:     <div class="page-footer">
+1474:         <span>Page 15 | {{ registration }}</span>
+1543:     <div class="page-footer">
+1545:         <span>Page 16 | {{ registration }}</span>
+1606:     <div class="page-footer">
+1666:     <div class="page-footer">
+1668:         <span>Page 17 | {{ registration }}</span>
+1703:     <div class="page-footer">
+1705:         <span>Page 18 | {{ registration }}</span>
+1743:     <div class="page-footer">
+1745:         <span>Page 19 | {{ registration }}</span>
+1791:     <div class="page-footer">
+1793:         <span>Page 20 | {{ registration }}</span>
+1832:     <div class="page-footer">
+1834:         <span>Page 21 | {{ registration }}</span>
+1865:     <div class="page-footer">
+1867:         <span>Page 22 | {{ registration }}</span>
+1895:     <div class="page-footer">
+1897:         <span>Page 23 | {{ registration }}</span>
+1971:     <div class="page-footer">
+1994:     <div class="page-footer" style="position:absolute; bottom:15mm; width:calc(100% - 44mm); display:flex; justify-content:center; left:22mm;">

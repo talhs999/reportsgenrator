@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UK Vehicle History Report Generator</title>
+    <meta name="description" content="Generate comprehensive UK vehicle history reports with MOT history, tax status, mileage analysis, and more.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <!-- ── Animated Background ──────────────────────────────── -->
+    <div class="bg-animation">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+    </div>
+
+    <!-- ── Main Container ───────────────────────────────────── -->
+    <div class="app-container">
+        
+        <!-- ── Header ───────────────────────────────────────── -->
+        <header class="app-header">
+            <div class="header-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+            </div>
+            <h1 class="app-title">Vehicle History Report</h1>
+            <p class="app-subtitle">Generate comprehensive UK vehicle reports with DVLA & DVSA data</p>
+        </header>
+
+        <!-- ── Form Card ────────────────────────────────────── -->
+        <form id="reportForm" class="report-form" enctype="multipart/form-data">
+            
+            <!-- Step 1: Registration -->
+            <div class="form-section">
+                <div class="section-label">
+                    <span class="step-number">1</span>
+                    <span>Vehicle Registration</span>
+                </div>
+                <div class="reg-input-wrapper">
+                    <div class="reg-plate-icon">GB</div>
+                    <input 
+                        type="text" 
+                        id="registration" 
+                        name="registration" 
+                        class="reg-input"
+                        placeholder="AB12 CDE"
+                        required
+                        maxlength="8"
+                        autocomplete="off"
+                        spellcheck="false"
+                    >
+                </div>
+                <p class="input-hint">Enter the UK registration number (e.g., AB12CDE, AB12 CDE)</p>
+            </div>
+
+            <!-- Step 2: Package Selection -->
+            <div class="form-section">
+                <div class="section-label">
+                    <span class="step-number">2</span>
+                    <span>Select Package</span>
+                </div>
+                <div class="package-grid">
+                    <label class="package-card" id="pkg-basic">
+                        <input type="radio" name="package" value="basic" hidden>
+                        <div class="package-badge">Basic</div>
+                        <div class="package-pages">Up to 15 Pages</div>
+                        <ul class="package-features">
+                            <li>✓ Vehicle Identity & Specs</li>
+                            <li>✓ MOT History & Analysis</li>
+                            <li>✓ Mileage Graph & Check</li>
+                            <li>✓ Tax & Insurance Status</li>
+                            <li>✓ Stolen & Finance Check</li>
+                            <li>✗ Emissions & ULEZ</li>
+                            <li>✗ Safety & Recalls Info</li>
+                        </ul>
+                    </label>
+                    <label class="package-card" id="pkg-standard">
+                        <input type="radio" name="package" value="standard" checked hidden>
+                        <div class="package-badge">Standard</div>
+                        <div class="package-pages">Up to 18 Pages</div>
+                        <ul class="package-features">
+                            <li>✓ Everything in Basic</li>
+                            <li>✓ Emissions & ULEZ</li>
+                            <li>✓ Safety & Recalls Info</li>
+                            <li>✓ Structural Assessment</li>
+                            <li>✓ Mechanical Overview</li>
+                            <li>✗ Valuation Estimate</li>
+                            <li>✗ Glossary of Terms</li>
+                        </ul>
+                    </label>
+                    <label class="package-card premium" id="pkg-premium">
+                        <input type="radio" name="package" value="premium" hidden>
+                        <div class="package-ribbon">RECOMMENDED</div>
+                        <div class="package-badge">Premium</div>
+                        <div class="package-pages">18 – 22 Pages</div>
+                        <ul class="package-features">
+                            <li>✓ Everything in Standard</li>
+                            <li>✓ Import / Export Status</li>
+                            <li>✓ Valuation Estimate</li>
+                            <li>✓ Pre-Purchase Checklist</li>
+                            <li>✓ Glossary of Terms</li>
+                            <li>★ Extended Detail Pages</li>
+                        </ul>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Step 3: Customization -->
+            <div class="form-section">
+                <div class="section-label">
+                    <span class="step-number">3</span>
+                    <span>Customise Your Report</span>
+                </div>
+
+                <div class="custom-grid">
+                    <!-- Cover Logo Upload -->
+                    <div class="custom-item">
+                        <label class="custom-label">Front Cover Logo (Optional)</label>
+                        <div class="logo-upload" id="coverLogoUpload">
+                            <input type="file" id="coverLogo" name="cover_logo" accept="image/*" hidden>
+                            <div class="logo-placeholder" id="coverLogoPlaceholder">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <polyline points="21 15 16 10 5 21"/>
+                                </svg>
+                                <span>Click to upload cover logo</span>
+                            </div>
+                            <img id="coverLogoPreview" class="logo-preview" alt="Cover Logo Preview" style="display:none;">
+                        </div>
+                        <p class="input-hint">Displayed largely on the front cover. PNG/JPG/SVG.</p>
+                    </div>
+
+                    <!-- Header Logo Upload -->
+                    <div class="custom-item">
+                        <label class="custom-label">Inner Pages Logo (Optional)</label>
+                        <div class="logo-upload" id="headerLogoUpload">
+                            <input type="file" id="headerLogo" name="header_logo" accept="image/*" hidden>
+                            <div class="logo-placeholder" id="headerLogoPlaceholder">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <polyline points="21 15 16 10 5 21"/>
+                                </svg>
+                                <span>Click to upload header logo</span>
+                            </div>
+                            <img id="headerLogoPreview" class="logo-preview" alt="Header Logo Preview" style="display:none;">
+                        </div>
+                        <p class="input-hint">Displayed small in the header of inner pages.</p>
+                    </div>
+
+                    <!-- Company Name -->
+                    <div class="custom-item">
+                        <label class="custom-label" for="companyName">Company Name</label>
+                        <input type="text" id="companyName" name="company_name" class="text-input" 
+                               value="Vehicle History Reports" placeholder="Your Company Name">
+                    </div>
+
+                    <!-- Website URL -->
+                    <div class="custom-item">
+                        <label class="custom-label" for="websiteUrl">Website URL</label>
+                        <input type="text" id="websiteUrl" name="website_url" class="text-input" 
+                               placeholder="www.yourwebsite.com">
+                        <p class="input-hint">Shown on every page footer (optional)</p>
+                    </div>
+
+                    <!-- Insurance Status (Manual) -->
+                    <div class="custom-item">
+                        <label class="custom-label" for="insuranceStatus">Insurance Status</label>
+                        <select id="insuranceStatus" name="insurance_status" class="text-input">
+                            <option value="not_checked" selected>Not Checked (Skip Section)</option>
+                            <option value="insured">Insured (Approved)</option>
+                            <option value="not_insured">Not Insured</option>
+                        </select>
+                        <p class="input-hint">Manually check via askMID and select result.</p>
+                    </div>
+
+                    <!-- Primary Color -->
+                    <div class="custom-item">
+                        <label class="custom-label">Primary Colour</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="primaryColor" name="primary_color" value="#1a3a5c" class="color-input">
+                            <input type="text" id="primaryColorHex" class="color-hex" value="#1a3a5c" maxlength="7">
+                            <div class="color-preview" id="primaryPreview" style="background:#1a3a5c;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Accent Color -->
+                    <div class="custom-item">
+                        <label class="custom-label">Accent Colour</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="accentColor" name="accent_color" value="#c8a45a" class="color-input">
+                            <input type="text" id="accentColorHex" class="color-hex" value="#c8a45a" maxlength="7">
+                            <div class="color-preview" id="accentPreview" style="background:#c8a45a;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preset Colors -->
+                <div class="preset-colors">
+                    <span class="preset-label">Quick Presets:</span>
+                    <button type="button" class="preset-btn" data-primary="#1a3a5c" data-accent="#c8a45a" title="Navy & Gold">
+                        <span style="background:#1a3a5c;"></span><span style="background:#c8a45a;"></span>
+                    </button>
+                    <button type="button" class="preset-btn" data-primary="#111111" data-accent="#d4af37" title="Golden Black">
+                        <span style="background:#111111;"></span><span style="background:#d4af37;"></span>
+                    </button>
+                    <button type="button" class="preset-btn" data-primary="#0598CF" data-accent="#ffb300" title="Ocean Cyan & Amber">
+                        <span style="background:#0598CF;"></span><span style="background:#ffb300;"></span>
+                    </button>
+                    <button type="button" class="preset-btn" data-primary="#1b5e20" data-accent="#81c784" title="Forest Green">
+                        <span style="background:#1b5e20;"></span><span style="background:#81c784;"></span>
+                    </button>
+                    <button type="button" class="preset-btn" data-primary="#8b0000" data-accent="#ffc107" title="Ruby Red & Gold">
+                        <span style="background:#8b0000;"></span><span style="background:#ffc107;"></span>
+                    </button>
+                    <button type="button" class="preset-btn" data-primary="#0d1b2a" data-accent="#e63946" title="Dark & Red">
+                        <span style="background:#0d1b2a;"></span><span style="background:#e63946;"></span>
+                    </button>
+                    <button type="button" class="preset-btn" data-primary="#1d3557" data-accent="#f77f00" title="Blue & Orange">
+                        <span style="background:#1d3557;"></span><span style="background:#f77f00;"></span>
+                    </button>
+                    <button type="button" class="preset-btn" data-primary="#3c096c" data-accent="#ff9e00" title="Purple & Amber">
+                        <span style="background:#3c096c;"></span><span style="background:#ff9e00;"></span>
+                    </button>
+                    <button type="button" class="preset-btn" data-primary="#212529" data-accent="#20c997" title="Charcoal & Teal">
+                        <span style="background:#212529;"></span><span style="background:#20c997;"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <span class="btn-text">Generate Report</span>
+                <span class="btn-loader" id="btnLoader" style="display:none;">
+                    <span class="spinner"></span>
+                    Generating PDF...
+                </span>
+            </button>
+        </form>
+
+        <!-- ── Status Message ───────────────────────────────── -->
+        <div id="statusMessage" class="status-message" style="display:none;"></div>
+
+        <!-- ── Footer ───────────────────────────────────────── -->
+        <footer class="app-footer">
+            <p>Data sourced from DVLA &amp; DVSA official UK Government APIs</p>
+            <p>All checks are legal and use publicly available data sources</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

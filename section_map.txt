@@ -1,0 +1,37 @@
+L641: {% endif %}
+L839: CONDITION: {% if structural %}
+L852: <div class="section-title">{{ structural.title }}</div>
+L883: {% endif %}
+L965: {% endif %}
+L1028: {% endif %}
+L1097: {% endif %}
+L1119: CONDITION: {% if package != 'basic' %}
+L1242: {% endif %}
+L1305: <div class="section-title">{{ stolen.title }}</div>
+L1341: <div class="section-title">{{ finance.title }}</div>
+L1384: <div class="section-title">{{ writeoff.title }}</div>
+L1455: {% endif %}
+L1463: {% endif %}
+L1536: {% endif %}
+L1588: {% endif %}
+L1595: {% endif %}
+L1601: {% endif %}
+L1612: {% endif %}
+L1659: {% endif %}
+L1673: CONDITION: {% if mechanical %}
+L1686: <div class="section-title">{{ mechanical.title }}</div>
+L1708: {% endif %}
+L1711: CONDITION: {% if safety %}
+L1724: <div class="section-title">{{ safety.title }}</div>
+L1748: {% endif %}
+L1752: CONDITION: PREMIUM SECTIONS (only if package == 'premium')
+L1755: CONDITION: {% if package == 'premium' %}
+L1808: <div class="section-title">{{ valuation.title }}</div>
+L1840: CONDITION: {% if prepurchase %}
+L1850: <div class="section-title">{{ prepurchase.title }}</div>
+L1870: {% endif %}
+L1874: CONDITION: {% if glossary %}
+L1900: {% endif %}
+L1902: {% endif %}
+L1951: {% endif %}
+L1985: {% endif %}

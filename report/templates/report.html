@@ -1,0 +1,2126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vehicle History Report — {{ registration }}</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   UK VEHICLE HISTORY REPORT — PDF TEMPLATE
+   Premium certificate/ledger design
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── CSS Variables (Dynamic Theme) ──────────────────────────── */
+:root {
+    --primary: {{ primary_color }};
+    --accent: {{ accent_color }};
+    --ink: #1a1814;
+    --paper: #fdfcf9;
+    --paper-alt: #f5f3ee;
+    --muted: #6b6459;
+    --border: #d4cfc5;
+    --pass: #1e7a3a;
+    --fail: #b52a2a;
+    --warn: #c27a0e;
+    --white: #ffffff;
+}
+
+/* ── Page Setup (A4 Print) ─────────────────────────────────── */
+@page {
+    size: A4;
+    margin: 0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+    background: var(--white);
+}
+
+/* ── Page Container ────────────────────────────────────────── */
+.page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm 22mm 25mm 22mm;
+    page-break-after: always;
+    position: relative;
+    background: var(--white);
+}
+
+.page:last-child {
+    page-break-after: avoid;
+}
+
+/* ── Page Header (repeating) ───────────────────────────────── */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary);
+    margin-bottom: 18px;
+}
+
+.page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-header-logo {
+    height: 32px;
+    width: auto;
+}
+
+.page-header-company {
+    font-size: 9pt;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.page-header-right {
+    text-align: right;
+    font-size: 8pt;
+    color: var(--muted);
+}
+
+.page-header-reg {
+    font-size: 10pt;
+    font-weight: 700;
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: var(--ink);
+    background: #f0eecc;
+    border: 1.5px solid #8a8640;
+    padding: 2px 10px;
+    border-radius: 3px;
+    letter-spacing: 1px;
+}
+
+/* ── Page Footer (repeating) ───────────────────────────────── */
+.page-footer {
+    position: absolute;
+    bottom: 12mm;
+    left: 22mm;
+    right: 22mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 7.5pt;
+    color: var(--muted);
+}
+
+/* ── Section Title ─────────────────────────────────────────── */
+.section-title {
+    font-size: 18pt;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 4px;
+    letter-spacing: -0.3px;
+}
+
+.section-subtitle {
+    font-size: 9pt;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    margin-bottom: 14px;
+}
+
+.section-divider {
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border: none;
+    margin-bottom: 18px;
+    border-radius: 2px;
+}
+
+/* ── Data Table ────────────────────────────────────────────── */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 10pt;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--primary);
+    color: var(--white);
+    font-weight: 600;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+
+.data-table tr:nth-child(even) td {
+    background: var(--paper-alt);
+}
+
+.data-table .label {
+    font-weight: 600;
+    color: var(--muted);
+    width: 42%;
+    font-size: 9.5pt;
+}
+
+.data-table .value {
+    font-weight: 600;
+    color: var(--ink);
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 10pt;
+}
+
+/* ── Status Badges ─────────────────────────────────────────── */
+.status-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 4px;
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pass {
+    background: #e8f5e9;
+    color: var(--pass);
+    border: 1px solid #a5d6a7;
+}
+
+.status-fail {
+    background: #fce4ec;
+    color: var(--fail);
+    border: 1px solid #ef9a9a;
+}
+
+.status-warning {
+    background: #fff8e1;
+    color: var(--warn);
+    border: 1px solid #ffe082;
+}
+
+.status-info {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #90caf9;
+}
+
+/* ── Info Cards ────────────────────────────────────────────── */
+.info-card {
+    background: var(--paper-alt);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    border-radius: 0 4px 4px 0;
+    font-size: 9.5pt;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+.info-card strong {
+    color: var(--ink);
+}
+
+/* ── Checklist ─────────────────────────────────────────────── */
+.checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+}
+
+.checklist li {
+    padding: 5px 0 5px 26px;
+    position: relative;
+    font-size: 9.5pt;
+    border-bottom: 1px dotted var(--border);
+}
+
+/* ── MOT Test Card (Reference Design) ───────────────────────── */
+.mot-test-card {
+    border: 1px solid #7a7a7a;
+    border-top: none;
+    margin-bottom: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.mot-test-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    background: #888888;
+    color: #ffffff;
+    font-size: 10pt;
+    font-weight: bold;
+}
+
+.mot-test-body {
+    padding: 0;
+}
+
+.mot-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+}
+
+.mot-table td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.mot-table tr:last-child td {
+    border-bottom: none;
+}
+
+.mot-table .label {
+    font-weight: bold;
+    width: 30%;
+    color: #333;
+}
+
+.mot-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 8pt;
+    font-weight: bold;
+    color: white;
+    margin-right: 8px;
+    min-width: 50px;
+    text-align: center;
+}
+
+.badge-advice { background: #00A859; }
+.badge-minor { background: #A69C95; }
+.badge-fail { background: #E53935; }
+
+.mot-defect-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 6px 12px;
+    font-size: 9pt;
+    border-bottom: 1px solid #eee;
+}
+
+.mot-defect-text {
+    flex: 1;
+    padding-top: 1px;
+    color: #444;
+}
+
+.mot-result-pass { color: #00A859; font-weight: bold; }
+.mot-result-fail { color: #E53935; font-weight: bold; }2pt;
+    font-weight: 800;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+/* ── Pass/Fail Check Row ───────────────────────────────────── */
+.check-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 4px;
+    font-size: 10pt;
+    font-weight: 600;
+}
+
+.check-row.pass {
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+}
+
+.check-row.fail {
+    background: #fce4ec;
+    border: 1px solid #f8bbd0;
+}
+
+.check-row.warn {
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+}
+
+.check-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12pt;
+    font-weight: 800;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.check-icon.pass {
+    background: var(--pass);
+    color: var(--white);
+}
+
+.check-icon.fail {
+    background: var(--fail);
+    color: var(--white);
+}
+
+.check-icon.warn {
+    background: var(--warn);
+    color: var(--white);
+}
+
+/* ── MOT Test Card ─────────────────────────────────────────── */
+.mot-test-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 14px;
+    overflow: hidden;
+}
+
+.mot-test-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    font-size: 10pt;
+    font-weight: 700;
+}
+
+.mot-test-header.pass {
+    background: var(--pass);
+    color: var(--white);
+}
+
+.mot-test-header.fail {
+    background: var(--fail);
+    color: var(--white);
+}
+
+.mot-test-body {
+    padding: 10px 14px;
+    font-size: 9pt;
+}
+
+.mot-test-body table {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.mot-test-body td {
+    padding: 3px 0;
+    vertical-align: top;
+}
+
+.mot-test-body .td-label {
+    font-weight: 600;
+    color: var(--muted);
+    width: 35%;
+}
+
+.defect-item {
+    padding: 4px 8px;
+    margin: 3px 0;
+    border-radius: 3px;
+    font-size: 8.5pt;
+}
+
+.defect-item.fail-item {
+    background: #fce4ec;
+    border-left: 3px solid var(--fail);
+    color: #7f1d1d;
+}
+
+.defect-item.advisory-item {
+    background: #fff8e1;
+    border-left: 3px solid var(--warn);
+    color: #78350f;
+}
+
+/* ── Chart Container ───────────────────────────────────────── */
+.chart-container {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+/* ── Sub Heading ───────────────────────────────────────────── */
+.sub-heading {
+    font-size: 12pt;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 14px;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+}
+
+/* ── Paragraph ─────────────────────────────────────────────── */
+.report-text {
+    font-size: 9.5pt;
+    line-height: 1.65;
+    color: #3a3630;
+    margin-bottom: 10px;
+    text-align: justify;
+}
+
+/* ── Category Card ─────────────────────────────────────────── */
+.category-card {
+    background: var(--paper-alt);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+.category-card h4 {
+    font-size: 10pt;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 3px;
+}
+
+.category-card p {
+    font-size: 9pt;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* ── Numbered List ─────────────────────────────────────────── */
+.numbered-list {
+    padding-left: 20px;
+    margin-bottom: 12px;
+}
+
+.numbered-list li {
+    font-size: 9.5pt;
+    padding: 3px 0;
+    color: #3a3630;
+}
+
+/* ── Glossary ──────────────────────────────────────────────── */
+.glossary-item {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px dotted var(--border);
+}
+
+.glossary-term {
+    font-weight: 700;
+    font-size: 10pt;
+    color: var(--primary);
+}
+
+.glossary-def {
+    font-size: 9pt;
+    color: var(--muted);
+    padding-left: 12px;
+    line-height: 1.5;
+}
+
+/* ── Valuation Source ──────────────────────────────────────── */
+.val-source {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    margin-bottom: 4px;
+    background: var(--paper-alt);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 9pt;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COVER PAGE
+   ══════════════════════════════════════════════════════════════ */
+.cover-page {
+    width: 210mm;
+    height: 297mm;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+    background: var(--white);
+}
+
+.cover-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 55%;
+    background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 60%, #000000));
+}
+
+.cover-bg::after {
+    content: "";
+    position: absolute;
+    bottom: -60px;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: var(--white);
+    transform: skewY(-3deg);
+}
+
+.cover-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 30mm 25mm;
+}
+
+.cover-logo-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25mm;
+}
+
+.cover-logo {
+    height: 48px;
+    width: auto;
+}
+
+.package-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 10pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.cover-title {
+    font-size: 32pt;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    color: var(--white);
+}
+
+.cover-subtitle {
+    font-size: 12pt;
+    font-weight: 400;
+    opacity: 0.85;
+    letter-spacing: 0.5px;
+    color: var(--white);
+}
+
+.cover-reg-plate {
+    margin-top: 30px;
+    display: inline-block;
+    background: #f0eecc;
+    border: 3px solid #8a8640;
+    border-radius: 6px;
+    padding: 10px 30px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 28pt;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--ink);
+}
+
+.cover-details {
+    margin-top: auto;
+    padding-top: 30px;
+}
+
+.cover-details-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+}
+
+.cover-detail-item {
+    width: 50%;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.cover-detail-label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.cover-detail-value {
+    font-size: 13pt;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.cover-footer {
+    margin-top: 20px;
+    font-size: 8pt;
+    color: var(--muted);
+    text-align: center;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+}
+
+/* ── Print adjustments ─────────────────────────────────────── */
+@media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 1: COVER PAGE
+     ══════════════════════════════════════════════════════════════ -->
+<div class="cover-page">
+    <div class="cover-bg"></div>
+    <div class="cover-content">
+        <div class="cover-logo-row">
+            <div class="cover-logo-container">
+                {% if cover_logo_uri %}
+                <img src="{{ cover_logo_uri }}" class="cover-logo" alt="Logo">
+                {% else %}
+                <h1 style="color: var(--primary); font-size: 24pt;">{{ company_name }}</h1>
+                {% endif %}
+            </div>
+        </div>
+
+        <div>
+            <div class="package-badge">{{ package | upper }} REPORT</div>
+            <div class="cover-title">Vehicle History Report</div>
+            <div class="cover-subtitle">Comprehensive {{ package | title }} Assessment</div>
+        </div>
+
+        <div class="cover-reg-plate">{{ registration }}</div>
+
+        <div class="cover-details">
+            <div class="cover-details-grid">
+                <div class="cover-detail-item">
+                    <div class="cover-detail-label">Make & Model</div>
+                    <div class="cover-detail-value">{{ vehicle.make }} {{ vehicle.model }}</div>
+                </div>
+                <div class="cover-detail-item">
+                    <div class="cover-detail-label">Year of Manufacture</div>
+                    <div class="cover-detail-value">{{ vehicle.year_of_manufacture }}</div>
+                </div>
+                <div class="cover-detail-item">
+                    <div class="cover-detail-label">Colour</div>
+                    <div class="cover-detail-value">{{ vehicle.colour }}</div>
+                </div>
+                <div class="cover-detail-item">
+                    <div class="cover-detail-label">Report Date</div>
+                    <div class="cover-detail-value">{{ report_date }}</div>
+                </div>
+            </div>
+            <div class="cover-footer">
+                Report ID: {{ report_id }} &nbsp;|&nbsp; Generated by {{ company_name }} &nbsp;|&nbsp; {{ report_date }}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 2: TABLE OF CONTENTS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    {% include '_page_header.html' ignore missing %}
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right">
+            <span class="page-header-reg">{{ registration }}</span>
+        </div>
+    </div>
+
+    <div class="section-title">Table of Contents</div>
+    <div class="section-subtitle">Report Sections</div>
+    <hr class="section-divider">
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width:10%;">#</th>
+                <th>Section</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in toc %}
+            <tr>
+                <td class="value" style="text-align:center;">{{ item.num }}</td>
+                <td style="font-weight:600;">{{ item.title }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="info-card" style="margin-top:auto;">
+        <strong>Report Type:</strong> {{ package | title }} Package &nbsp;|&nbsp;
+        <strong>Total Sections:</strong> {{ toc | length }} &nbsp;|&nbsp;
+        <strong>Generated:</strong> {{ report_date }}
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.toc }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 3: VEHICLE IDENTITY & REGISTRATION
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right">
+            <span class="page-header-reg">{{ registration }}</span>
+        </div>
+    </div>
+
+    <div class="section-title">Vehicle Identity & Registration</div>
+    <div class="section-subtitle">Section 1 — General Information</div>
+    <hr class="section-divider">
+
+    {% if vehicle.vehicle_score and vehicle.vehicle_score != 'N/A' %}
+    <div style="display:flex; align-items:center; justify-content:space-between; background:#f8f9fa; border:1px solid #e2e8f0; border-radius:8px; padding:20px; margin-bottom:20px;">
+        <div>
+            <h3 style="margin:0 0 5px 0; color:var(--text-main); font-size:18pt;">Vehicle Score</h3>
+            <p style="margin:0; color:var(--text-light); font-size:11pt;">Based on overall condition, MOT history, and age.</p>
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:36pt; font-weight:900; color:var(--primary); line-height:1;">{{ vehicle.vehicle_score }}<span style="font-size:14pt; color:var(--text-light);">/1000</span></div>
+            <div style="display:inline-block; margin-top:5px; padding:3px 10px; background:var(--primary); color:white; border-radius:20px; font-weight:bold; font-size:10pt;">
+                {{ vehicle.score_rating }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <table class="data-table">
+        <thead><tr><th colspan="2">Vehicle Details</th></tr></thead>
+        <tbody>
+            <tr><td class="label">Registration Number</td><td class="value">{{ vehicle.registration }}</td></tr>
+            <tr><td class="label">Make</td><td class="value">{{ vehicle.make }}</td></tr>
+            <tr><td class="label">Model</td><td class="value">{{ vehicle.model }}</td></tr>
+            <tr><td class="label">Colour</td><td class="value">{{ vehicle.colour }}</td></tr>
+            <tr><td class="label">Year of Manufacture</td><td class="value">{{ vehicle.year_of_manufacture }}</td></tr>
+            <tr><td class="label">Date of First Registration</td><td class="value">{{ vehicle.date_of_first_registration }}</td></tr>
+            <tr><td class="label">Vehicle Type</td><td class="value">{{ vehicle.vehicle_type }}</td></tr>
+            <tr><td class="label">Wheelplan</td><td class="value">{{ vehicle.wheelplan }}</td></tr>
+            <tr><td class="label">Type Approval</td><td class="value">{{ vehicle.type_approval }}</td></tr>
+            <tr><td class="label">Revenue Weight</td><td class="value">{% if vehicle.revenue_weight and vehicle.revenue_weight != 0 %}{{ vehicle.revenue_weight }}{% else %}N/A{% endif %}</td></tr>
+            <tr><td class="label">Date of Last V5C Issued</td><td class="value">{{ vehicle.date_of_last_v5c_issued }}</td></tr>
+        </tbody>
+    </table>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.identity }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 4: DOCUMENTATION & IDENTIFICATION REVIEW
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Documentation & Identification Review</div>
+    <div class="section-subtitle">Section 2 — Document Verification</div>
+    <hr class="section-divider">
+
+    <p class="report-text">
+        A thorough documentation review is an essential step in assessing the provenance and legitimacy of any
+        used vehicle. The following key documents and identifiers should be verified before completing a purchase.
+    </p>
+
+    <div class="sub-heading">V5C Registration Certificate (Logbook)</div>
+    <p class="report-text">
+        The V5C is the most important document associated with a vehicle. It records the registered keeper
+        (not necessarily the legal owner) and contains key details including the VIN, engine number, colour,
+        and date of first registration. The current V5C format has multiple security features including a
+        watermark, colour-coded sections, and a unique document reference number.
+    </p>
+    <p class="report-text">
+        <strong>Key checks:</strong> Ensure the V5C document reference number matches DVLA records,
+        the registered keeper details match the seller, and there are no signs of tampering or alteration.
+        A vehicle without a V5C should be treated with extreme caution.
+    </p>
+
+    <div class="sub-heading">Vehicle Identification Number (VIN)</div>
+    <p class="report-text">
+        The VIN is a unique 17-character code assigned during manufacture. It can typically be found on the
+        dashboard (visible through the windscreen), on a plate in the driver's door frame, and stamped into
+        the chassis. The VIN on the vehicle must match the VIN recorded on the V5C and the DVLA database.
+        Any discrepancy may indicate the vehicle has been cloned or its identity altered.
+    </p>
+
+    <div class="sub-heading">Service History</div>
+    <p class="report-text">
+        A full service history demonstrates that the vehicle has been maintained according to the manufacturer's
+        recommended schedule. Service records may be in the form of a stamped service book, digital service
+        records (maintained by the manufacturer's dealer network), or individual invoices from independent
+        garages. Gaps in service history may indicate periods of neglected maintenance.
+    </p>
+
+    <div class="sub-heading">Number of Previous Keepers</div>
+    <div class="info-card">
+        <strong>V5C Issued Date:</strong> {{ vehicle.date_of_last_v5c_issued }}<br>
+        The date the most recent V5C was issued can indicate a recent change of keeper. Multiple V5C
+        re-issues in a short period may warrant further investigation.
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.documentation }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+{% if structural %}
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 5: STRUCTURAL & ACCIDENT ASSESSMENT
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">{{ structural.title }}</div>
+    <div class="section-subtitle">Section 3 — Physical Assessment Guide</div>
+    <hr class="section-divider">
+
+    {% for para in structural.paragraphs %}
+    <p class="report-text">{{ para }}</p>
+    {% endfor %}
+
+    <div class="sub-heading">Structural Inspection Checklist</div>
+    <table class="data-table">
+        <thead><tr><th style="width:35%;">Inspection Area</th><th>What to Look For</th></tr></thead>
+        <tbody>
+            {% for item in structural.checklist %}
+            <tr>
+                <td class="label">{{ item.item }}</td>
+                <td style="font-size:9pt;">{{ item.description }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="info-card">
+        <strong>Recommendation:</strong> If structural damage is suspected, commission an independent
+        vehicle inspection through the AA, RAC, or an IMI-accredited engineer before purchase.
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.structural }} | {{ registration }}</span>
+    </div>
+</div>
+{% endif %}
+
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 6: VEHICLE HISTORY STATUS OVERVIEW
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Vehicle History Status Overview</div>
+    <div class="section-subtitle">Section 4 — At a Glance</div>
+    <hr class="section-divider">
+
+    <p class="report-text" style="margin-bottom:16px;">
+        The following summary provides a quick overview of the key checks performed on vehicle
+        <strong>{{ registration }}</strong>. Detailed information for each check is provided in the
+        subsequent sections of this report.
+    </p>
+
+    <!-- MOT Status -->
+    <div class="check-row {% if vehicle.mot_status == 'Valid' %}pass{% else %}fail{% endif %}">
+        <span class="check-icon {% if vehicle.mot_status == 'Valid' %}pass{% else %}fail{% endif %}">
+            {% if vehicle.mot_status == 'Valid' %}✓{% else %}✗{% endif %}
+        </span>
+        <span>MOT Status: <strong>{{ vehicle.mot_status }}</strong>
+        {% if vehicle.mot_expiry_date != 'N/A' %} — Expires {{ vehicle.mot_expiry_date }}{% endif %}</span>
+    </div>
+
+    <!-- Tax Status -->
+    <div class="check-row {% if vehicle.tax_status == 'Taxed' %}pass{% elif vehicle.tax_status == 'SORN' %}warn{% else %}fail{% endif %}">
+        <span class="check-icon {% if vehicle.tax_status == 'Taxed' %}pass{% elif vehicle.tax_status == 'SORN' %}warn{% else %}fail{% endif %}">
+            {% if vehicle.tax_status == 'Taxed' %}✓{% elif vehicle.tax_status == 'SORN' %}!{% else %}✗{% endif %}
+        </span>
+        <span>Tax Status: <strong>{{ vehicle.tax_status }}</strong>
+        {% if vehicle.tax_due_date != 'N/A' %} — Due {{ vehicle.tax_due_date }}{% endif %}</span>
+    </div>
+
+    <!-- Insurance -->
+    <div class="check-row warn">
+        <span class="check-icon warn">!</span>
+        <span>Insurance: <strong>{{ insurance.status }}</strong> — Verify via askMID</span>
+    </div>
+
+    <!-- Stolen -->
+    <div class="check-row pass">
+        <span class="check-icon pass">✓</span>
+        <span>Stolen Check: <strong>{{ stolen.status }}</strong></span>
+    </div>
+
+    <!-- Finance -->
+    <div class="check-row warn">
+        <span class="check-icon warn">!</span>
+        <span>Finance Check: <strong>{{ finance.status }}</strong></span>
+    </div>
+
+    <!-- Write-off -->
+    <div class="check-row warn">
+        <span class="check-icon warn">!</span>
+        <span>Write-Off Check: <strong>{{ writeoff.status }}</strong></span>
+    </div>
+
+    <!-- Export -->
+    <div class="check-row {% if not vehicle.marked_for_export %}pass{% else %}fail{% endif %}">
+        <span class="check-icon {% if not vehicle.marked_for_export %}pass{% else %}fail{% endif %}">
+            {% if not vehicle.marked_for_export %}✓{% else %}✗{% endif %}
+        </span>
+        <span>Export Marker: <strong>{% if vehicle.marked_for_export %}MARKED FOR EXPORT{% else %}NOT MARKED{% endif %}</strong></span>
+    </div>
+
+    <!-- Mileage -->
+    {% if mot.latest_mileage and mot.latest_mileage != 'N/A' %}
+    <div class="check-row pass">
+        <span class="check-icon pass">✓</span>
+        <span>Last Recorded Mileage: <strong>{{ "{:,}".format(mot.latest_mileage) }} miles</strong> (as of last MOT)</span>
+    </div>
+    {% endif %}
+
+    <div class="info-card" style="margin-top:14px;">
+        <strong>Note:</strong> Items marked with <span class="status-badge status-warning" style="padding:2px 8px;font-size:7.5pt;">VERIFICATION RECOMMENDED</span>
+        require verification through an accredited provider for definitive results. This report uses
+        publicly available data and templated assessments where live data is not available.
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.overview }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 7: TAX & MOT STATUS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Tax & MOT Status</div>
+    <div class="section-subtitle">Section 5 — Current Standing</div>
+    <hr class="section-divider">
+
+    <table class="data-table">
+        <thead><tr><th colspan="2">Vehicle Tax Information</th></tr></thead>
+        <tbody>
+            <tr>
+                <td class="label">Tax Status</td>
+                <td class="value">
+                    <span class="status-badge {% if vehicle.tax_status == 'Taxed' %}status-pass{% else %}status-fail{% endif %}">
+                        {{ vehicle.tax_status }}
+                    </span>
+                </td>
+            </tr>
+            <tr><td class="label">Tax Due Date</td><td class="value">{{ vehicle.tax_due_date }}</td></tr>
+        </tbody>
+    </table>
+
+    <table class="data-table">
+        <thead><tr><th colspan="2">MOT Information</th></tr></thead>
+        <tbody>
+            <tr>
+                <td class="label">MOT Status</td>
+                <td class="value">
+                    <span class="status-badge {% if vehicle.mot_status == 'Valid' %}status-pass{% else %}status-fail{% endif %}">
+                        {{ vehicle.mot_status }}
+                    </span>
+                </td>
+            </tr>
+            <tr><td class="label">MOT Expiry Date</td><td class="value">{{ vehicle.mot_expiry_date }}</td></tr>
+            {% if mot.success %}
+            <tr><td class="label">Total MOT Tests</td><td class="value">{{ mot.total_tests }}</td></tr>
+            <tr><td class="label">Tests Passed</td><td class="value" style="color:var(--pass);">{{ mot.pass_count }}</td></tr>
+            <tr><td class="label">Tests Failed</td><td class="value" style="color:var(--fail);">{{ mot.fail_count }}</td></tr>
+            <tr><td class="label">Pass Rate</td><td class="value">{{ mot.pass_rate }}</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <p class="report-text">
+        All vehicles over 3 years old in the UK require an annual MOT test to ensure they meet the minimum
+        road safety and environmental standards set by the Driver and Vehicle Standards Agency (DVSA).
+        Driving without a valid MOT is an offence under the Road Traffic Act 1988 and can result in a fine
+        of up to £1,000.
+    </p>
+
+    <p class="report-text">
+        Vehicle Excise Duty (road tax) must be paid for all vehicles used or kept on public roads.
+        The tax rate is determined by the vehicle's CO2 emissions (for vehicles registered after April 2017)
+        or engine size (for older vehicles). Untaxed vehicles on public roads may be clamped, impounded,
+        or destroyed.
+    </p>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.tax_mot_status }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 8: ENGINE & PERFORMANCE DATA
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Engine & Performance Data</div>
+    <div class="section-subtitle">Section 6 — Powertrain Specification</div>
+    <hr class="section-divider">
+
+    <table class="data-table">
+        <thead><tr><th colspan="2">Engine Specification</th></tr></thead>
+        <tbody>
+            <tr><td class="label">Fuel Type</td><td class="value">{{ vehicle.fuel_type }}</td></tr>
+            <tr><td class="label">Engine Capacity</td><td class="value">{% if vehicle.engine_capacity != 'N/A' %}{{ vehicle.engine_capacity }}{% else %}N/A{% endif %}</td></tr>
+            <tr><td class="label">Euro Emission Standard</td><td class="value">{{ vehicle.euro_status }}</td></tr>
+            <tr><td class="label">CO₂ Emissions</td><td class="value">{% if vehicle.co2_emissions != 'N/A' %}{{ vehicle.co2_emissions }}{% else %}N/A{% endif %}</td></tr>
+            <tr><td class="label">Real Driving Emissions</td><td class="value">{{ vehicle.real_driving_emissions }}</td></tr>
+        </tbody>
+    </table>
+
+    <div class="sub-heading">Engine Overview</div>
+    <p class="report-text">
+        The {{ vehicle.make }} {{ vehicle.model }} is equipped with a {{ vehicle.engine_capacity }}cc
+        {{ vehicle.fuel_type | lower }} engine meeting {{ vehicle.euro_status }} emission standards.
+        {% if vehicle.fuel_type == 'DIESEL' %}
+        Diesel engines offer superior fuel economy and torque but may be subject to additional charges
+        in Ultra Low Emission Zones (ULEZ) unless they meet Euro 6 standards.
+        {% elif vehicle.fuel_type == 'PETROL' %}
+        Petrol engines typically offer smoother power delivery and lower NOx emissions compared to
+        diesel equivalents, and are generally ULEZ-compliant from Euro 4 onwards.
+        {% elif vehicle.fuel_type == 'ELECTRIC' %}
+        Electric vehicles produce zero tailpipe emissions and are exempt from road tax, ULEZ charges,
+        and congestion charges in most UK cities.
+        {% endif %}
+    </p>
+
+    <div class="sub-heading">Performance Considerations</div>
+    <p class="report-text">
+        When assessing engine condition, key indicators include smooth idling, responsive throttle,
+        absence of excessive exhaust smoke, and stable oil pressure. The MOT advisory history
+        (detailed later in this report) may reveal engine-related concerns identified during
+        previous inspections.
+    </p>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.engine_perf }} | {{ registration }}</span>
+    </div>
+</div>
+
+{% if additional_info %}
+<!-- ══════════════════════════════════════════════════════════════
+     NEW PAGE: ADDITIONAL INFORMATION & STATISTICS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Additional Information</div>
+    <div class="section-subtitle">Technical Details & Statistics</div>
+    <hr class="section-divider">
+
+    <table class="data-table" style="margin-bottom:30px;">
+        <thead>
+            <tr><th colspan="2" style="background-color: var(--primary); color: white;">Additional information</th></tr>
+        </thead>
+        <tbody>
+            {% if additional_info.get('fuel_tank_capacity') %}<tr><td class="label">Fuel tank capacity</td><td class="value">{{ additional_info.fuel_tank_capacity }}</td></tr>{% endif %}
+            {% if additional_info.get('number_of_doors') %}<tr><td class="label">Number of doors</td><td class="value">{{ additional_info.number_of_doors }}</td></tr>{% endif %}
+            {% if additional_info.get('number_of_seats') %}<tr><td class="label">Number of seats</td><td class="value">{{ additional_info.number_of_seats }}</td></tr>{% endif %}
+            {% if additional_info.get('number_of_axles') %}<tr><td class="label">Number of axles</td><td class="value">{{ additional_info.number_of_axles }}</td></tr>{% endif %}
+            {% if additional_info.get('engine_number') %}<tr><td class="label">Engine number</td><td class="value">{{ additional_info.engine_number }}</td></tr>{% endif %}
+            {% if additional_info.get('drivetrain') %}<tr><td class="label">Drivetrain</td><td class="value">{{ additional_info.drivetrain }}</td></tr>{% endif %}
+            {% if additional_info.get('steering_position') %}<tr><td class="label">Steering position</td><td class="value">{{ additional_info.steering_position }}</td></tr>{% endif %}
+        </tbody>
+    </table>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.additional_info }} | {{ registration }}</span>
+    </div>
+</div>
+{% endif %}
+
+
+
+{% if package != 'basic' %}
+{% if package == 'premium' %}
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 9: ENVIRONMENTAL & EMISSIONS REPORT
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Environmental & Emissions Report</div>
+    <div class="section-subtitle">Section 7 — Environmental Impact</div>
+    <hr class="section-divider">
+
+    <table class="data-table">
+        <thead><tr><th colspan="2">Emissions Data</th></tr></thead>
+        <tbody>
+            <tr><td class="label">CO₂ Emissions</td><td class="value">{% if emissions.co2 != 'N/A' %}{{ emissions.co2 }}{% else %}N/A{% endif %}</td></tr>
+            <tr><td class="label">CO₂ Band</td><td class="value">{{ emissions.co2_band }}</td></tr>
+            <tr><td class="label">Euro Standard</td><td class="value">{{ emissions.euro_status }}</td></tr>
+            <tr><td class="label">Real Driving Emissions</td><td class="value">{{ emissions.real_driving_emissions }}</td></tr>
+            <tr><td class="label">Fuel Type</td><td class="value">{{ emissions.fuel_type }}</td></tr>
+            <tr>
+                <td class="label">ULEZ Compliance</td>
+                <td class="value">
+                    <span class="status-badge {% if 'Yes' in emissions.ulez_compliant %}status-pass{% elif 'No' in emissions.ulez_compliant %}status-fail{% else %}status-warning{% endif %}">
+                        {{ emissions.ulez_compliant }}
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="sub-heading">Clean Air Zones (CAZ)</div>
+    <p class="report-text">
+        Several UK cities have implemented or are planning Clean Air Zones where vehicles that do not
+        meet minimum emission standards are charged a daily fee. Cities with active CAZs include
+        Birmingham, Bath, Bradford, Bristol, Portsmouth, and London (ULEZ). Before purchasing this
+        vehicle, check compatibility with your local Clean Air Zone requirements.
+    </p>
+
+    <p class="report-text">
+        You can check Clean Air Zone charges for this vehicle at:<br>
+        <strong>https://www.gov.uk/clean-air-zones</strong>
+    </p>
+
+    <div class="info-card">
+        <strong>Note:</strong> ULEZ compliance is estimated based on the Euro emission standard recorded
+        by the DVLA. For definitive ULEZ compliance, check at <strong>tfl.gov.uk/ulez</strong>.
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.emissions }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 10: RUNNING COSTS & TAX ANALYSIS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Running Costs & Tax Analysis</div>
+    <div class="section-subtitle">Section 8 — Ownership Costs</div>
+    <hr class="section-divider">
+
+    <table class="data-table">
+        <thead><tr><th colspan="2">Tax & Running Cost Summary</th></tr></thead>
+        <tbody>
+            <tr>
+                <td class="label">Current Tax Status</td>
+                <td class="value">
+                    <span class="status-badge {% if running_costs.tax_status == 'Taxed' %}status-pass{% else %}status-fail{% endif %}">
+                        {{ running_costs.tax_status }}
+                    </span>
+                </td>
+            </tr>
+            <tr><td class="label">Tax Due Date</td><td class="value">{{ running_costs.tax_due_date }}</td></tr>
+            <tr><td class="label">Estimated Annual Tax (VED)</td><td class="value">{{ running_costs.estimated_annual_tax }}</td></tr>
+            <tr><td class="label">Fuel Type</td><td class="value">{{ running_costs.fuel_type }}</td></tr>
+            <tr><td class="label">Engine Capacity</td><td class="value">{% if running_costs.engine_capacity != 'N/A' %}{{ running_costs.engine_capacity }}{% else %}N/A{% endif %}</td></tr>
+        </tbody>
+    </table>
+
+    <div class="sub-heading">Estimated Ownership Costs</div>
+    <p class="report-text">
+        The total cost of ownership includes Vehicle Excise Duty (road tax), insurance, fuel,
+        maintenance, and depreciation. For the {{ vehicle.make }} {{ vehicle.model }}, the primary
+        recurring costs to consider are:
+    </p>
+
+    <table class="data-table">
+        <thead><tr><th>Cost Category</th><th>Guidance</th></tr></thead>
+        <tbody>
+            <tr><td class="label">Annual Road Tax (VED)</td><td style="font-size:9pt;">{{ running_costs.estimated_annual_tax }}</td></tr>
+            <tr><td class="label">Insurance</td><td style="font-size:9pt;">Varies by driver profile — obtain quotes from comparison sites</td></tr>
+            <tr><td class="label">Servicing</td><td style="font-size:9pt;">Follow manufacturer service intervals — budget £200-£600/year</td></tr>
+            <tr><td class="label">MOT</td><td style="font-size:9pt;">Maximum fee: £54.85 (car) — required annually after 3 years</td></tr>
+            <tr><td class="label">Tyres</td><td style="font-size:9pt;">Replacement when below 1.6mm tread — budget £60-£200 per tyre</td></tr>
+        </tbody>
+    </table>
+
+    <div class="info-card">
+        <strong>Tip:</strong> Use the government's vehicle tax checker at
+        <strong>https://www.gov.uk/check-vehicle-tax</strong> for the exact VED rate for this vehicle.
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.running_costs }} | {{ registration }}</span>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 11: INSURANCE VERIFICATION
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Insurance Verification</div>
+    <div class="section-subtitle">Section 9 — Motor Insurance Check</div>
+    <hr class="section-divider">
+
+    <div class="check-row {% if insurance.status == 'INSURED' %}pass{% elif insurance.status == 'NOT INSURED' %}fail{% else %}warn{% endif %}" style="margin-bottom:16px;">
+        <span class="check-icon {% if insurance.status == 'INSURED' %}pass{% elif insurance.status == 'NOT INSURED' %}fail{% else %}warn{% endif %}">
+            {% if insurance.status == 'INSURED' %}✓{% elif insurance.status == 'NOT INSURED' %}✗{% else %}!{% endif %}
+        </span>
+        <span>Insurance Status: <strong>{{ insurance.status }}</strong></span>
+    </div>
+
+    <p class="report-text">{{ insurance.description }}</p>
+
+    {% if insurance.how_to_check %}
+    <div class="sub-heading">How to Verify Insurance Status</div>
+    <ol class="numbered-list">
+        {% for step in insurance.how_to_check %}
+        <li>{{ step }}</li>
+        {% endfor %}
+    </ol>
+    {% endif %}
+
+    <div class="info-card" style="margin-top:20px;">
+        <strong>Verify at:</strong> {{ insurance.check_url }}<br>
+        <strong>Provider:</strong> {{ insurance.provider }}
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.insurance_verification }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 12: STOLEN VEHICLE CHECK
+     ══════════════════════════════════════════════════════════════ -->
+{% if package != 'basic' %}
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">{{ stolen.title }}</div>
+    <div class="section-subtitle">Section 10 — Theft Record Check</div>
+    <hr class="section-divider">
+
+    <div class="check-row pass" style="margin-bottom:16px;">
+        <span class="check-icon pass">✓</span>
+        <span>Status: <strong>{{ stolen.status }}</strong></span>
+    </div>
+
+    {% for para in stolen.paragraphs %}
+    <p class="report-text">{{ para }}</p>
+    {% endfor %}
+
+    <div class="info-card" style="border-left-color:var(--warn);">
+        <strong>Disclaimer:</strong> {{ stolen.disclaimer }}
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.stolen }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 13: OUTSTANDING FINANCE CHECK
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">{{ finance.title }}</div>
+    <div class="section-subtitle">Section 11 — Finance Status</div>
+    <hr class="section-divider">
+
+    <div class="check-row warn" style="margin-bottom:16px;">
+        <span class="check-icon warn">!</span>
+        <span>Status: <strong>{{ finance.status }}</strong></span>
+    </div>
+
+    {% for para in finance.paragraphs %}
+    <p class="report-text">{{ para }}</p>
+    {% endfor %}
+
+    <div class="sub-heading">How to Verify Finance Status</div>
+    <ol class="numbered-list">
+        {% for step in finance.how_to_check %}
+        <li>{{ step }}</li>
+        {% endfor %}
+    </ol>
+
+    <div class="info-card" style="border-left-color:var(--warn);">
+        <strong>Disclaimer:</strong> {{ finance.disclaimer }}
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.finance }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 14: INSURANCE WRITE-OFF CHECK
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">{{ writeoff.title }}</div>
+    <div class="section-subtitle">Section 12 — Write-Off Categories</div>
+    <hr class="section-divider">
+
+    <div class="check-row warn" style="margin-bottom:16px;">
+        <span class="check-icon warn">!</span>
+        <span>Status: <strong>{{ writeoff.status }}</strong></span>
+    </div>
+
+    {% for para in writeoff.paragraphs %}
+    <p class="report-text">{{ para }}</p>
+    {% endfor %}
+
+    <div class="sub-heading">UK Write-Off Categories</div>
+    {% for cat in writeoff.categories %}
+    <div class="category-card">
+        <h4>{{ cat.category }}</h4>
+        <p>{{ cat.description }}</p>
+    </div>
+    {% endfor %}
+
+    <div class="info-card" style="border-left-color:var(--warn);">
+        <strong>Disclaimer:</strong> {{ writeoff.disclaimer }}
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.writeoff }} | {{ registration }}</span>
+    </div>
+</div>
+{% endif %}
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 15: MILEAGE HISTORY & ANALYSIS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Mileage History & Analysis</div>
+    <div class="section-subtitle">Section 13 — Odometer Readings</div>
+    <hr class="section-divider">
+
+    {% if mot.mileage_history %}
+    <div class="chart-container">
+        {{ mileage_chart_svg }}
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Mileage</th>
+                <th>Miles Since Previous</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reading in mot.mileage_history %}
+            <tr>
+                <td class="value">{{ reading.date }}</td>
+                <td class="value">{{ "{:,}".format(reading.mileage) }} mi</td>
+                <td class="value">
+                    {% if loop.index > 1 %}
+                        {{ "{:,}".format(reading.mileage - mot.mileage_history[loop.index - 2].mileage) }} mi
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="info-card">No mileage history available from MOT records.</div>
+    {% endif %}
+
+    <p class="report-text">
+        Mileage readings are recorded at each MOT test. The average UK car covers approximately
+        7,000–10,000 miles per year. Significant deviations from this average, or mileage readings
+        that decrease between tests, may indicate odometer tampering — a criminal offence under
+        the Consumer Protection from Unfair Trading Regulations 2008.
+    </p>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.mileage_history }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 16: MOT TEST SUMMARY
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">MOT Test Summary</div>
+    <div class="section-subtitle">Section 14 — Test Record Overview</div>
+    <hr class="section-divider">
+
+    {% if mot.success %}
+    <table class="data-table" style="margin-bottom:16px;">
+        <thead><tr><th colspan="2">MOT Statistics</th></tr></thead>
+        <tbody>
+            <tr><td class="label">Total Tests Recorded</td><td class="value">{{ mot.total_tests }}</td></tr>
+            <tr><td class="label">Tests Passed</td><td class="value" style="color:var(--pass);">{{ mot.pass_count }}</td></tr>
+            <tr><td class="label">Tests Failed</td><td class="value" style="color:var(--fail);">{{ mot.fail_count }}</td></tr>
+            <tr><td class="label">Overall Pass Rate</td><td class="value">{{ mot.pass_rate }}</td></tr>
+            <tr><td class="label">Total Advisory Items</td><td class="value">{{ mot.advisories | length }}</td></tr>
+        </tbody>
+    </table>
+
+    <div class="sub-heading">Test Results Timeline</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Result</th>
+                <th>Mileage</th>
+                <th>Defects</th>
+                <th>Advisories</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for test in mot.tests %}
+            <tr>
+                <td class="value">{{ test.date }}</td>
+                <td>
+                    <span class="status-badge {% if test.result == 'PASSED' %}status-pass{% else %}status-fail{% endif %}">
+                        {{ test.result }}
+                    </span>
+                </td>
+                <td class="value">{{ "{:,}".format(test.mileage) if test.mileage != 'N/A' else 'N/A' }}</td>
+                <td style="text-align:center;">{{ test.defects | length }}</td>
+                <td style="text-align:center;">{{ test.advisories | length }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="info-card">{{ mot.error if mot.error else 'No MOT history available.' }}</div>
+    {% endif %}
+
+    <div class="info-card">
+        Full details of each test, including all defects and advisories, are provided on the following pages.
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.mot_summary }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGES 17+: MOT HISTORY DETAIL (Dynamic — 2 tests per page)
+     ══════════════════════════════════════════════════════════════ -->
+{% if package != 'basic' %}
+{% if mot.success and mot.tests %}
+{% set tests_per_page = 2 %}
+{% for i in range(0, mot.tests | length, tests_per_page) %}
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">MOT History Detail</div>
+    <div class="section-subtitle">Tests {{ i + 1 }}{% if i + tests_per_page <= mot.tests | length %} – {{ i + tests_per_page }}{% else %} – {{ mot.tests | length }}{% endif %} of {{ mot.tests | length }}</div>
+    <hr class="section-divider">
+
+    {% for j in range(i, [i + tests_per_page, mot.tests | length] | min) %}
+    {% set test = mot.tests[j] %}
+    <div class="mot-test-card">
+        <div class="mot-test-header">
+            <span>MOT #{{ mot.tests | length - j }}</span>
+            <span>{{ test.date }}</span>
+        </div>
+        <div class="mot-test-body">
+            <table class="mot-table">
+                <tr><td class="label">MOT test number</td><td>{{ test.mot_test_number }}</td></tr>
+                <tr><td class="label">Mileage</td><td>{{ "{:,}".format(test.mileage) if test.mileage != 'N/A' else 'N/A' }} {{ test.mileage_unit }}</td></tr>
+                <tr><td class="label">Result</td><td>
+                    {% if test.result == 'PASSED' %}
+                    <span class="mot-result-pass">✓ Passed</span>
+                    {% else %}
+                    <span class="mot-result-fail">✗ Failed</span>
+                    {% endif %}
+                </td></tr>
+                <tr><td class="label">Next expiry date</td><td>{{ test.expiry_date }}</td></tr>
+            </table>
+
+            {% if test.defects %}
+                {% for defect in test.defects %}
+                <div class="mot-defect-row">
+                    <span class="mot-badge badge-fail">Fail</span>
+                    <div class="mot-defect-text">{{ defect.text }}</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if test.advisories %}
+                {% for adv in test.advisories %}
+                <div class="mot-defect-row">
+                    {% if adv.type == 'MINOR' %}
+                    <span class="mot-badge badge-minor">Minor</span>
+                    {% else %}
+                    <span class="mot-badge badge-advice">Advice</span>
+                    {% endif %}
+                    <div class="mot-defect-text">{{ adv.text }}</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.mot_detail[loop.index0] }} | {{ registration }}</span>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+{% endif %}
+
+
+{% if package != 'basic' %}
+<!-- ══════════════════════════════════════════════════════════════
+     ADVISORY ITEM ANALYSIS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Advisory Item Analysis</div>
+    <div class="section-subtitle">Items Requiring Attention</div>
+    <hr class="section-divider">
+
+    {% if mot.advisories %}
+    <p class="report-text">
+        The following advisory items have been recorded across the vehicle's MOT history. Advisory items
+        are not test failures but indicate components that may need attention in the near future.
+        Addressing these items proactively can prevent future MOT failures and improve vehicle safety.
+    </p>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width:70%;">Advisory Description</th>
+                <th>First Recorded</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for adv in mot.advisories %}
+            <tr>
+                <td style="font-size:9pt;">⚠ {{ adv.text }}</td>
+                <td class="value">{{ adv.first_seen }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="check-row pass">
+        <span class="check-icon pass">✓</span>
+        <span>No advisory items have been recorded in the MOT history.</span>
+    </div>
+    {% endif %}
+
+    <div class="info-card">
+        <strong>Note:</strong> Recurring advisories across multiple MOT tests may indicate a component
+        that is gradually deteriorating and may eventually result in a test failure if not addressed.
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.advisory }} | {{ registration }}</span>
+    </div>
+</div>
+{% endif %}
+
+
+{% if mechanical %}
+<!-- ══════════════════════════════════════════════════════════════
+     MECHANICAL CONDITION OVERVIEW
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">{{ mechanical.title }}</div>
+    <div class="section-subtitle">Mechanical Systems Guide</div>
+    <hr class="section-divider">
+
+    {% for para in mechanical.paragraphs %}
+    <p class="report-text">{{ para }}</p>
+    {% endfor %}
+
+    {% for system in mechanical.systems %}
+    <div class="sub-heading">{{ system.system }}</div>
+    <ul class="numbered-list">
+        {% for check in system.checks %}
+        <li>{{ check }}</li>
+        {% endfor %}
+    </ul>
+    {% endfor %}
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.mechanical }} | {{ registration }}</span>
+    </div>
+</div>
+{% endif %}
+
+
+{% if safety %}
+<!-- ══════════════════════════════════════════════════════════════
+     SAFETY RATINGS & RECALLS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">{{ safety.title }}</div>
+    <div class="section-subtitle">Safety & Recall Information</div>
+    <hr class="section-divider">
+
+    {% for para in safety.paragraphs %}
+    <p class="report-text">{{ para }}</p>
+    {% endfor %}
+
+    <div class="sub-heading">How to Check for Outstanding Recalls</div>
+    <ol class="numbered-list">
+        {% for step in safety.how_to_check_recalls %}
+        <li>{{ step }}</li>
+        {% endfor %}
+    </ol>
+
+    <div class="info-card" style="border-left-color:var(--warn);">
+        <strong>Disclaimer:</strong> {{ safety.disclaimer }}
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.safety }} | {{ registration }}</span>
+    </div>
+</div>
+{% endif %}
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PREMIUM SECTIONS (only if package == 'premium')
+     ══════════════════════════════════════════════════════════════ -->
+
+{% if package == 'premium' %}
+
+<!-- IMPORT / EXPORT STATUS -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Import / Export Status</div>
+    <div class="section-subtitle">Vehicle Origin & Export Markers</div>
+    <hr class="section-divider">
+
+    <table class="data-table">
+        <thead><tr><th colspan="2">Import / Export Data</th></tr></thead>
+        <tbody>
+            <tr>
+                <td class="label">Marked for Export</td>
+                <td class="value">
+                    <span class="status-badge {% if not import_export.marked_for_export %}status-pass{% else %}status-fail{% endif %}">
+                        {% if import_export.marked_for_export %}YES — FLAGGED{% else %}NO{% endif %}
+                    </span>
+                </td>
+            </tr>
+            <tr><td class="label">Type Approval</td><td class="value">{{ import_export.type_approval }}</td></tr>
+            <tr><td class="label">Last V5C Issued</td><td class="value">{{ import_export.date_of_last_v5c }}</td></tr>
+        </tbody>
+    </table>
+
+    {% for para in import_export.paragraphs %}
+    <p class="report-text">{{ para }}</p>
+    {% endfor %}
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.import_export }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+<!-- VALUATION ESTIMATE -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">{{ valuation.title }}</div>
+    <div class="section-subtitle">Market Value Guidance</div>
+    <hr class="section-divider">
+
+    {% for para in valuation.paragraphs %}
+    <p class="report-text">{{ para }}</p>
+    {% endfor %}
+
+    <div class="sub-heading">Recommended Valuation Sources</div>
+    {% for source in valuation.valuation_sources %}
+    <div class="val-source">
+        <span><strong>{{ source.name }}</strong></span>
+        <span>{{ source.url }}</span>
+        <span class="status-badge status-info" style="padding:2px 8px;font-size:7pt;">{{ source.type }}</span>
+    </div>
+    {% endfor %}
+
+    <div class="sub-heading">Key Factors Affecting Value</div>
+    <ul class="numbered-list">
+        {% for factor in valuation.factors %}
+        <li>{{ factor }}</li>
+        {% endfor %}
+    </ul>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.valuation }} | {{ registration }}</span>
+    </div>
+</div>
+
+
+<!-- PRE-PURCHASE INSPECTION CHECKLIST -->
+{% if prepurchase %}
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">{{ prepurchase.title }}</div>
+    <div class="section-subtitle">Buyer's Inspection Guide</div>
+    <hr class="section-divider">
+
+    <p class="report-text">{{ prepurchase.description }}</p>
+
+    {% for section in prepurchase.sections %}
+    <div class="sub-heading">{{ section.heading }}</div>
+    <ul class="checklist">
+        {% for item in section['items'] %}
+        <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+    {% endfor %}
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.prepurchase }} | {{ registration }}</span>
+    </div>
+</div>
+{% endif %}
+
+
+<!-- GLOSSARY OF TERMS -->
+{% if glossary %}
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Glossary of Terms</div>
+    <div class="section-subtitle">Reference Definitions</div>
+    <hr class="section-divider">
+
+    {% for item in glossary %}
+    <div class="glossary-item">
+        <div class="glossary-term">{{ item.term }}</div>
+        <div class="glossary-def">{{ item.definition }}</div>
+    </div>
+    {% endfor %}
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.glossary }} | {{ registration }}</span>
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     FINAL PAGE: REPORT SUMMARY & DISCLAIMER
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            {% if cover_logo_uri %}<img src="{{ cover_logo_uri }}" class="page-header-logo" style="max-height: 40px;">{% endif %}
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right"><span class="page-header-reg">{{ registration }}</span></div>
+    </div>
+
+    <div class="section-title">Report Summary & Disclaimer</div>
+    <div class="section-subtitle">Final Notes</div>
+    <hr class="section-divider">
+
+    <div class="sub-heading">Report Overview</div>
+    <table class="data-table">
+        <tbody>
+            <tr><td class="label">Report ID</td><td class="value">{{ report_id }}</td></tr>
+            <tr><td class="label">Registration</td><td class="value">{{ registration }}</td></tr>
+            <tr><td class="label">Vehicle</td><td class="value">{{ vehicle.make }} {{ vehicle.model }} ({{ vehicle.year_of_manufacture }})</td></tr>
+            <tr><td class="label">Package</td><td class="value">{{ package | title }}</td></tr>
+            <tr><td class="label">Date Generated</td><td class="value">{{ report_date }}</td></tr>
+            <tr><td class="label">Generated By</td><td class="value">{{ company_name }}</td></tr>
+        </tbody>
+    </table>
+
+    <div class="sub-heading">Summary of Findings</div>
+    <div class="check-row {% if vehicle.mot_status == 'Valid' %}pass{% else %}fail{% endif %}">
+        <span class="check-icon {% if vehicle.mot_status == 'Valid' %}pass{% else %}fail{% endif %}">{% if vehicle.mot_status == 'Valid' %}✓{% else %}✗{% endif %}</span>
+        <span>MOT: {{ vehicle.mot_status }}</span>
+    </div>
+    <div class="check-row {% if vehicle.tax_status == 'Taxed' %}pass{% else %}warn{% endif %}">
+        <span class="check-icon {% if vehicle.tax_status == 'Taxed' %}pass{% else %}warn{% endif %}">{% if vehicle.tax_status == 'Taxed' %}✓{% else %}!{% endif %}</span>
+        <span>Tax: {{ vehicle.tax_status }}</span>
+    </div>
+    <div class="check-row pass">
+        <span class="check-icon pass">✓</span>
+        <span>Stolen Check: {{ stolen.status }}</span>
+    </div>
+    {% if mot.latest_mileage and mot.latest_mileage != 'N/A' %}
+    <div class="check-row pass">
+        <span class="check-icon pass">✓</span>
+        <span>Last Mileage: {{ "{:,}".format(mot.latest_mileage) }} miles</span>
+    </div>
+    {% endif %}
+
+    <div class="sub-heading">Disclaimer</div>
+    <p class="report-text" style="font-size:8.5pt;">
+        This report has been compiled for informational purposes only. While every effort has been made to ensure accuracy, the
+        information is provided "as is" without warranty of any kind, express or implied. This report
+        does not constitute a guarantee of the vehicle's condition, history, or fitness for purpose.
+    </p>
+
+    <p class="report-text" style="font-size:8.5pt;">
+        {{ company_name }} accepts no liability for any loss, damage, or expense arising from reliance
+        on the information contained in this report. A physical inspection by a qualified mechanic is
+        always recommended before purchasing any used vehicle.
+    </p>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Vehicle History Report{% if website_url %} | {{ website_url }}{% endif %}</span>
+        <span>Page {{ p.disclaimer }} | {{ registration }}</span>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     BACK COVER PAGE
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; background-color:var(--paper-alt);">
+    {% if header_logo_uri %}
+    <div style="margin-bottom: 50px;">
+        <img src="{{ header_logo_uri }}" style="max-height: 140px; max-width: 350px;">
+    </div>
+    {% endif %}
+    <h2 style="font-size:20pt; font-weight:700; color:var(--primary); margin-bottom:8px;">{{ company_name }}</h2>
+    <span style="font-size:11pt; color:var(--muted);">Thank you for using our vehicle history report service.</span>
+    
+    <div style="margin-top: 40px; padding: 20px; border-top: 1px solid var(--border); width: 60%;">
+        <p style="font-size: 10pt; color:var(--muted); margin-bottom:5px;">Report Generated: <strong>{{ report_date }}</strong></p>
+        <p style="font-size: 10pt; color:var(--muted);">Vehicle Registration: <strong>{{ registration }}</strong></p>
+    </div>
+
+    <div class="page-footer" style="position:absolute; bottom:15mm; width:calc(100% - 44mm); display:flex; justify-content:center; left:22mm;">
+        <span>{{ company_name }} — End of Report</span>
+    </div>
+</div>
+
+</body>
+</html>
