@@ -1,5 +1,5 @@
-# Use official Python image (bullseye is very stable and has all dependencies)
-FROM python:3.10-bullseye
+# Use official Playwright Python image (contains all OS dependencies and browsers pre-installed)
+FROM mcr.microsoft.com/playwright/python:v1.42.0-jammy
 
 # Set working directory
 WORKDIR /app
@@ -7,10 +7,6 @@ WORKDIR /app
 # Copy requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Install Playwright browsers and all required system dependencies automatically
-RUN playwright install chromium
-RUN playwright install-deps chromium
 
 # Copy application code
 COPY . .
