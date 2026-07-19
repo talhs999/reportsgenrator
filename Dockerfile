@@ -41,8 +41,8 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p static/uploads static/downloads static/temp
 
-# Expose port
-EXPOSE 8000
+# Expose port (7860 is default for Hugging Face)
+EXPOSE 7860
 
-# Start Uvicorn server
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start Uvicorn server (bind to 0.0.0.0 and port 7860)
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
