@@ -55,7 +55,7 @@ async def generate_report(
     if not vehicle_data.get("success"):
         raise ValueError(vehicle_data.get("error", "Failed to fetch vehicle data"))
     
-    mot_data = await dvsa.fetch_mot_history(registration)
+    mot_data = await dvsa.fetch_mot_history(registration, vehicle_data.get("year_of_manufacture"), vehicle_data.get("total_mileage"))
     
     # Override MOT data with real extracted stats if available from VehicleScore
     if vehicle_data.get("total_mileage") != "N/A":
@@ -68,57 +68,7 @@ async def generate_report(
         mot_data["total_tests"] = mot_data["pass_count"] + mot_data["fail_count"]
 
     if vehicle_data.get("total_mileage") != "N/A":
-        try:
-            total_m = int(str(vehicle_data["total_mileage"]).replace(",", "").replace("mi", "").strip())
-            yearly_m = vehicle_data.get("yearly_mileage", "8000")
-            if yearly_m == "N/A": yearly_m = "8000"
-            yearly_m = int(str(yearly_m).replace(",", "").replace("mi", "").strip())
-            
-            n_tests = mot_data.get("total_tests", 5)
-            if n_tests <= 0: n_tests = 5
-            
-            history = []
-            tests = []
-            curr_m = total_m
-            curr_year = datetime.now().year
-            
-            for i in range(n_tests):
-                test_date = f"{curr_year - i}-09-15"
-                history.append({
-                    "date": test_date,
-                    "mileage": curr_m,
-                    "miles_since_last": yearly_m if i > 0 else "-"
-                })
-                tests.append({
-                    "date": test_date,
-                    "result": "PASSED" if i != 2 else "FAILED",
-                    "mileage": curr_m,
-                    "mileage_unit": "mi",
-                    "expiry_date": f"{curr_year - i + 1}-09-14",
-                    "mot_test_number": f"123456789{i}",
-                    "defects": [{"text": "Sample defect", "type": "FAIL", "dangerous": False}] if i == 2 else [],
-                    "advisories": [{"text": "Sample advisory", "type": "ADVISORY", "dangerous": False}] if i % 2 == 0 else []
-                })
-                curr_m = max(1000, curr_m - yearly_m)
-            
-            history.reverse()
-            # Calculate miles since last correctly for reversed array
-            for i in range(len(history)):
-                if i == 0:
-                    history[i]["miles_since_last"] = "-"
-                else:
-                    history[i]["miles_since_last"] = f"{history[i]['mileage'] - history[i-1]['mileage']:,} mi"
-                    
-            mot_data["mileage_history"] = history
-            mot_data["tests"] = tests
-            
-            # Patch MOT Expiry Date if missing from DVLA summary
-            if vehicle_data.get("mot_expiry_date") == "N/A" and tests:
-                latest_test = tests[0]
-                if latest_test["result"] == "PASS" and latest_test.get("expiry_date"):
-                    vehicle_data["mot_expiry_date"] = latest_test["expiry_date"]
-        except Exception as e:
-            pass
+        pass
 
     if insurance_status == "insured":
         insurance_data = {
@@ -190,7 +140,8 @@ async def generate_report(
     # ── Dynamic Page Number Calculation ────────────────────────
     tests_count = len(mot_data.get("tests", []))
     has_insurance = bool(insurance_data and insurance_data.get("success", False) == True)
-    p = _calculate_pages(package, tests_count, additional_info is not None, has_insurance)
+    has_mot_summary = mot_data.get('total_tests', 0) > 0 or mot_data.get('latest_mileage') != 'N/A'
+    p = _calculate_pages(package, tests_count, additional_info is not None, has_insurance, has_mot_summary=has_mot_summary)
     
     # ── Build Table of Contents ────────────────────────────────
     toc = _build_toc(p)
@@ -393,7 +344,7 @@ def _generate_mileage_chart(mileage_history: list, primary_color: str, accent_co
     return "\n".join(svg_parts)
 
 
-def _calculate_pages(package: str, tests_count: int, has_additional_info: bool, has_insurance: bool, has_theft: bool = True, has_finance: bool = True, has_writeoff: bool = True) -> dict:
+def _calculate_pages(package: str, tests_count: int, has_additional_info: bool, has_insurance: bool, has_mot_summary: bool = False, has_theft: bool = True, has_finance: bool = True, has_writeoff: bool = True) -> dict:
     """Calculate exact page numbers for each section dynamically."""
     p = {}
     current = 1
@@ -463,20 +414,27 @@ def _calculate_pages(package: str, tests_count: int, has_additional_info: bool, 
         p['writeoff'] = None
     
     # 16. Mileage History & Analysis
-    p['mileage_history'] = current
-    current += 1
+    if tests_count > 0:
+        p['mileage_history'] = current
+        current += 1
+    else:
+        p['mileage_history'] = None
     
     # 17. MOT Test Summary
-    p['mot_summary'] = current
-    current += 1
+    if tests_count > 0 or has_mot_summary:
+        p['mot_summary'] = current
+        current += 1
+    else:
+        p['mot_summary'] = None
     
     # 18. MOT Test Detail (Dynamic page count based on test history)
-    mot_detail_pages = max(1, math.ceil(tests_count / 2))
     p['mot_detail'] = []
-    for i in range(mot_detail_pages):
-        p['mot_detail'].append(current)
-        current += 1
-        
+    if tests_count > 0:
+        mot_detail_pages = max(1, math.ceil(tests_count / 2))
+        for i in range(mot_detail_pages):
+            p['mot_detail'].append(current)
+            current += 1
+            
     p['advisory'] = None
     p['mechanical'] = current
     current += 1

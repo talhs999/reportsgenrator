@@ -305,8 +305,8 @@ def run_scraper_sync(registration: str) -> Dict[str, Any]:
                     for name in names:
                         if name in dvla_data:
                             val = dvla_data[name]
-                            if val.lower() == "not available":
-                                val = "N/A"
+                            if val.lower() == "not available" or val == "N/A":
+                                val = "Not Available"
                             result[key] = val
                             break
 
@@ -344,13 +344,18 @@ def run_scraper_sync(registration: str) -> Dict[str, Any]:
                 elif vs == "sorn":
                     result["tax_status"] = "SORN"
 
-                # Vehicle type from type_approval
+                # Vehicle type from type_approval or wheelplan
                 ta = result.get("type_approval", "")
+                wp = str(result.get("wheelplan", "")).upper()
                 if ta == "M1":
                     result["vehicle_type"] = "Car"
                 elif ta in ("N1", "N2", "N3"):
                     result["vehicle_type"] = "Van / Commercial"
-                elif ta in ("L1", "L2", "L3", "L4", "L5"):
+                elif ta in ("L1", "L2", "L3", "L4", "L5", "L6", "L7"):
+                    result["vehicle_type"] = "Motorcycle"
+                elif "2-WHEEL" in wp or "2 WHEEL" in wp:
+                    result["vehicle_type"] = "Motorcycle"
+                elif "BICYCLE" in wp or "MOTORCYCLE" in wp:
                     result["vehicle_type"] = "Motorcycle"
 
             # ── Source 2: VehicleScore ──────────────────────────────

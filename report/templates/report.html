@@ -592,70 +592,73 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 30mm 25mm;
+    padding: 20mm 20mm 15mm 20mm;
 }
 
 .cover-logo-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25mm;
+    margin-bottom: 12mm;
 }
 
 .cover-logo {
-    height: 48px;
+    max-height: 55px;
     width: auto;
+    object-fit: contain;
 }
 
 .package-badge {
     display: inline-block;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 10pt;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 8.5pt;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 12px;
-    color: var(--white);
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
+    color: #ffffff;
     background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.35);
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .cover-title {
-    font-size: 32pt;
+    font-size: 26pt;
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: -0.5px;
-    margin-bottom: 8px;
-    color: var(--white);
+    margin-bottom: 6px;
+    color: #ffffff;
 }
 
 .cover-subtitle {
-    font-size: 12pt;
+    font-size: 11pt;
     font-weight: 400;
-    opacity: 0.85;
+    opacity: 0.9;
     letter-spacing: 0.5px;
-    color: var(--white);
+    color: #ffffff;
 }
 
 .cover-reg-plate {
-    margin-top: 30px;
+    margin-top: 18px;
     display: inline-block;
     background: #f0eecc;
     border: 3px solid #8a8640;
     border-radius: 6px;
-    padding: 10px 30px;
+    padding: 8px 24px;
     font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 28pt;
+    font-size: 24pt;
     font-weight: 800;
     letter-spacing: 3px;
     color: var(--ink);
+    align-self: flex-start;
 }
 
 .cover-details {
     margin-top: auto;
-    padding-top: 30px;
+    padding-top: 10px;
+    padding-bottom: 0px;
 }
 
 .cover-details-grid {
@@ -717,7 +720,7 @@ body {
             </div>
         </div>
 
-        <div>
+        <div class="title-block">
             <div class="package-badge">{{ package | upper }} REPORT</div>
             <div class="cover-title">Vehicle History Report</div>
             <div class="cover-subtitle">Comprehensive {{ package | title }} Assessment</div>
@@ -2106,7 +2109,7 @@ body {
 <div class="page" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; background-color:var(--paper-alt);">
     {% if header_logo_uri %}
     <div style="margin-bottom: 50px;">
-        <img src="{{ header_logo_uri }}" style="max-height: 140px; max-width: 350px;">
+        <img src="{{ cover_logo_uri }}" style="max-height: 140px; max-width: 350px;">
     </div>
     {% endif %}
     <h2 style="font-size:20pt; font-weight:700; color:var(--primary); margin-bottom:8px;">{{ company_name }}</h2>
