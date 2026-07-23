@@ -55,7 +55,13 @@ async def generate_report(
     if not vehicle_data.get("success"):
         raise ValueError(vehicle_data.get("error", "Failed to fetch vehicle data"))
     
-    mot_data = await dvsa.fetch_mot_history(registration, vehicle_data.get("year_of_manufacture"), vehicle_data.get("total_mileage"))
+    mot_data = await dvsa.fetch_mot_history(
+        registration, 
+        vehicle_data.get("year_of_manufacture"), 
+        vehicle_data.get("total_mileage"),
+        vehicle_data.get("mot_tests", []),
+        vehicle_data.get("vehicle_type", "Car")
+    )
     
     # Override MOT data with real extracted stats if available from VehicleScore
     if vehicle_data.get("total_mileage") != "N/A":
@@ -336,6 +342,7 @@ def _calculate_pages(package: str, tests_count: int, has_additional_info: bool, 
     """Calculate exact page numbers for each section dynamically."""
     p = {}
     current = 1
+    pkg = package.lower()
     
     # Cover & TOC are always page 1 and 2
     p['cover'] = current
@@ -351,8 +358,12 @@ def _calculate_pages(package: str, tests_count: int, has_additional_info: bool, 
     p['documentation'] = current
     current += 1
     
-    p['structural'] = None
-    
+    if pkg in ['standard', 'premium']:
+        p['structural'] = current
+        current += 1
+    else:
+        p['structural'] = None
+        
     # 6. Vehicle History Status Overview
     p['overview'] = current
     current += 1
@@ -424,16 +435,28 @@ def _calculate_pages(package: str, tests_count: int, has_additional_info: bool, 
             current += 1
             
     p['advisory'] = None
-    p['mechanical'] = current
-    current += 1
-    p['safety'] = current
-    current += 1
+    
+    if pkg in ['standard', 'premium']:
+        p['mechanical'] = current
+        current += 1
+        p['safety'] = current
+        current += 1
+    else:
+        p['mechanical'] = None
+        p['safety'] = None
+        
     p['import_export'] = None
+    
     p['valuation'] = current
     current += 1
-    p['prepurchase'] = current
-    current += 1
-    p['glossary'] = None
+    
+    if pkg == 'premium':
+        p['prepurchase'] = current
+        current += 1
+        p['glossary'] = None # Placeholder if glossary is added later, or add it below
+    else:
+        p['prepurchase'] = None
+        p['glossary'] = None
         
     # 26. Report Summary & Disclaimer (Always last page)
     p['disclaimer'] = current
