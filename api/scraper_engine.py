@@ -153,19 +153,23 @@ def _scrape_generic_fallback(page, reg_clean: str, url: str, input_sel: str, sub
         logger.error(f"Fallback scrape error on {url}: {e}")
     return data
 
-import requests
+import urllib.request
 from bs4 import BeautifulSoup
+import json
 
 def _scrape_carcheck_requests(reg_clean: str) -> Dict[str, Any]:
-    """Fallback scraper using requests on carcheck.co.uk to bypass Playwright blocks."""
+    """Fallback scraper using standard urllib on carcheck.co.uk to bypass Playwright blocks."""
     parsed = {}
     url = f"https://www.carcheck.co.uk/vrm/{reg_clean}"
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     try:
-        r = requests.get(url, headers=headers, timeout=10)
-        if r.status_code != 200:
-            return parsed
-        soup = BeautifulSoup(r.text, 'html.parser')
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=10) as response:
+            if response.status != 200:
+                return parsed
+            html_content = response.read().decode('utf-8')
+            
+        soup = BeautifulSoup(html_content, 'html.parser')
         
         for tr in soup.find_all('tr'):
             th = tr.find('th')
