@@ -9,6 +9,7 @@ This is the main entry point. It serves:
 Run with: uvicorn main:app --reload --port 8000
 """
 import os
+import re
 import uuid
 from fastapi import FastAPI, File, Form, UploadFile, Request
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse
@@ -17,6 +18,7 @@ import io
 
 from config import UPLOAD_DIR, FRONTEND_TEMPLATE_DIR, STATIC_DIR
 from report.generator import generate_report
+from report.germany_generator import generate_germany_report
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -24,8 +26,8 @@ import traceback
 
 # ── Create App ──────────────────────────────────────────────────
 app = FastAPI(
-    title="UK Vehicle History Report Generator",
-    description="Generate comprehensive vehicle history reports from DVLA & DVSA data.",
+    title="Vehicle History Report Generator",
+    description="Generate comprehensive UK & German vehicle history reports.",
     version="1.0.0",
 )
 
@@ -62,6 +64,7 @@ async def home():
 @app.post("/api/generate-report")
 async def api_generate_report(
     registration: str = Form(...),
+    country: str = Form("uk"),
     package: str = Form("standard"),
     primary_color: str = Form("#1a3a5c"),
     accent_color: str = Form("#c8a45a"),
@@ -72,21 +75,12 @@ async def api_generate_report(
     header_logo: UploadFile = File(None),
 ):
     """
-    Generate a vehicle history report PDF.
-    
-    Accepts form data with:
-    - registration: UK vehicle registration number
-    - package: 'standard' or 'premium'
-    - primary_color: Hex color for theme
-    - accent_color: Hex color for accents
-    - company_name: Company name to display
-    - cover_logo: Optional logo for the front cover
-    - header_logo: Optional logo for inner pages
+    Generate a vehicle history report PDF (UK or DE).
     """
     try:
         # Handle logo uploads
         cover_logo_filename = None
-        if cover_logo and cover_logo.filename:
+        if cover_logo and hasattr(cover_logo, 'filename') and cover_logo.filename:
             ext = os.path.splitext(cover_logo.filename)[1].lower()
             if ext in ('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'):
                 cover_logo_filename = f"cover_{uuid.uuid4().hex}{ext}"
@@ -96,7 +90,7 @@ async def api_generate_report(
                     f.write(content)
 
         header_logo_filename = None
-        if header_logo and header_logo.filename:
+        if header_logo and hasattr(header_logo, 'filename') and header_logo.filename:
             ext = os.path.splitext(header_logo.filename)[1].lower()
             if ext in ('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'):
                 header_logo_filename = f"header_{uuid.uuid4().hex}{ext}"
@@ -105,22 +99,36 @@ async def api_generate_report(
                 with open(logo_path, "wb") as f:
                     f.write(content)
 
-        # Generate PDF
-        pdf_bytes = await generate_report(
-            registration=registration,
-            package=package,
-            primary_color=primary_color,
-            accent_color=accent_color,
-            cover_logo_filename=cover_logo_filename,
-            header_logo_filename=header_logo_filename,
-            company_name=company_name,
-            website_url=website_url,
-            insurance_status=insurance_status,
-        )
+        reg_clean = registration.strip()
+        safe_reg = re.sub(r'[^A-Za-z0-9]', '', reg_clean) or "VEHICLE"
 
-        # Return JSON with download URL
-        reg_clean = registration.upper().replace(" ", "")
-        filename = f"Vehicle_Report_{reg_clean}.pdf"
+        # Generate PDF based on country or 17-char VIN
+        if country.lower() == "de" or len(reg_clean) == 17:
+            pdf_bytes = await generate_germany_report(
+                vin=reg_clean,
+                package=package,
+                primary_color=primary_color,
+                accent_color=accent_color,
+                cover_logo_filename=cover_logo_filename,
+                header_logo_filename=header_logo_filename,
+                company_name=company_name,
+                website_url=website_url,
+                insurance_status=insurance_status,
+            )
+            filename = f"Fahrzeug_Bericht_{safe_reg}.pdf"
+        else:
+            pdf_bytes = await generate_report(
+                registration=reg_clean,
+                package=package,
+                primary_color=primary_color,
+                accent_color=accent_color,
+                cover_logo_filename=cover_logo_filename,
+                header_logo_filename=header_logo_filename,
+                company_name=company_name,
+                website_url=website_url,
+                insurance_status=insurance_status,
+            )
+            filename = f"Vehicle_Report_{safe_reg}.pdf"
         download_id = uuid.uuid4().hex
         pdf_path = os.path.join(DOWNLOADS_DIR, f"{download_id}.pdf")
         
@@ -143,10 +151,12 @@ async def api_generate_report(
 @app.get("/api/download/{download_id}")
 async def download_report(download_id: str, filename: str = "Vehicle_Report.pdf"):
     """Download a generated report by ID."""
-    pdf_path = os.path.join(DOWNLOADS_DIR, f"{download_id}.pdf")
+    safe_id = re.sub(r'[^A-Za-z0-9]', '', download_id)
+    pdf_path = os.path.join(DOWNLOADS_DIR, f"{safe_id}.pdf")
     if not os.path.exists(pdf_path):
         return JSONResponse(status_code=404, content={"error": "Download link expired or invalid."})
-    return FileResponse(pdf_path, media_type="application/pdf", filename=filename)
+    safe_filename = re.sub(r'[^A-Za-z0-9_\-\.]', '_', filename)
+    return FileResponse(pdf_path, media_type="application/pdf", filename=safe_filename)
 
 
 @app.get("/health")

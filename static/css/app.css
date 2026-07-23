@@ -199,6 +199,46 @@ body {
     flex-shrink: 0;
 }
 
+/* ── Country Tabs ──────────────────────────────────────────── */
+.country-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.country-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.country-tab:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+.country-tab.active {
+    background: var(--gradient-primary);
+    border-color: transparent;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+.tab-flag {
+    font-size: 1.1rem;
+}
+
 /* ── Registration Input ────────────────────────────────────── */
 .reg-input-wrapper {
     display: flex;

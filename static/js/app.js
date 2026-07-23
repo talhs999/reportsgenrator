@@ -19,6 +19,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const headerLogoPlaceholder = document.getElementById('headerLogoPlaceholder');
     const headerLogoPreview = document.getElementById('headerLogoPreview');
 
+    // ── Country Tab Switcher ────────────────────────────────────
+    window.switchCountry = function(country) {
+        const countryTabs = document.querySelectorAll('.country-tab');
+        const countryInput = document.getElementById('country');
+        const plateIcon = document.getElementById('plateIcon');
+        const regInput = document.getElementById('registration');
+        const inputHint = document.getElementById('inputHint');
+
+        countryTabs.forEach(t => t.classList.remove('active'));
+        const activeTab = document.querySelector(`.country-tab[data-country="${country}"]`) || document.getElementById(`tab-${country}`);
+        if (activeTab) activeTab.classList.add('active');
+
+        if (countryInput) countryInput.value = country;
+
+        if (country === 'de') {
+            if (plateIcon) {
+                plateIcon.textContent = 'DE';
+                plateIcon.style.background = '#000000';
+            }
+            if (regInput) {
+                regInput.placeholder = 'WVWZZZ3CZWE123456';
+                regInput.maxLength = 17;
+            }
+            if (inputHint) {
+                inputHint.textContent = 'Geben Sie die 17-stellige Fahrgestellnummer (FIN / VIN) ein';
+            }
+        } else {
+            if (plateIcon) {
+                plateIcon.textContent = 'GB';
+                plateIcon.style.background = '#003da5';
+            }
+            if (regInput) {
+                regInput.placeholder = 'AB12 CDE';
+                regInput.maxLength = 8;
+            }
+            if (inputHint) {
+                inputHint.textContent = 'Enter the UK registration number (e.g., AB12CDE, AB12 CDE)';
+            }
+        }
+    };
+
+    const countryTabs = document.querySelectorAll('.country-tab');
+    countryTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            if (e) e.preventDefault();
+            const country = tab.getAttribute('data-country') || tab.dataset.country;
+            window.switchCountry(country);
+        });
+    });
+
     // ── Package Selection ──────────────────────────────────────
     const packageCards = document.querySelectorAll('.package-card');
     packageCards.forEach(card => {

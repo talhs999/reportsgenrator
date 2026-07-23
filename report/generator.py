@@ -204,42 +204,30 @@ async def generate_report(
 def _html_to_pdf_sync(html_content: str) -> bytes:
     """
     Convert HTML string to PDF using Playwright's Chromium browser synchronously.
-    This method renders CSS perfectly including gradients, flexbox, and grid.
+    Uses set_content directly in memory to avoid Windows temp file IO errors.
     """
-    # Write HTML to a temp file so Chromium can load it
-    tmp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'static', 'temp')
-    os.makedirs(tmp_dir, exist_ok=True)
-    tmp_path = os.path.join(tmp_dir, f'report_{os.getpid()}.html')
-    
-    try:
-        with open(tmp_path, 'w', encoding='utf-8') as f:
-            f.write(html_content)
+    with sync_playwright() as p:
+        browser = p.chromium.launch(
+            headless=True,
+            args=['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        )
+        page = browser.new_page()
+        page.set_content(html_content, wait_until='networkidle')
         
-        file_url = 'file:///' + tmp_path.replace('\\', '/').replace(' ', '%20')
+        pdf_bytes = page.pdf(
+            format='A4',
+            print_background=True,
+            margin={
+                'top': '0mm',
+                'right': '0mm',
+                'bottom': '0mm',
+                'left': '0mm',
+            },
+            display_header_footer=False,
+        )
         
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(file_url, wait_until='networkidle')
-            
-            pdf_bytes = page.pdf(
-                format='A4',
-                print_background=True,
-                margin={
-                    'top': '0mm',
-                    'right': '0mm',
-                    'bottom': '0mm',
-                    'left': '0mm',
-                },
-            )
-            
-            browser.close()
-        
+        browser.close()
         return pdf_bytes
-    finally:
-        # Clean up temp file
-        if os.path.exists(tmp_path):
-            os.remove(tmp_path)
 
 
 def _file_to_data_uri(filepath: str) -> str:

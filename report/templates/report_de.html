@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<style>
+:root {
+    --primary: {{ primary_color | default('#1a3a5c') }};
+    --accent: {{ accent_color | default('#c8a45a') }};
+    --dark: #111827;
+    --light-bg: #f8fafc;
+    --border: #e2e8f0;
+    --text-main: #1e293b;
+    --text-light: #64748b;
+    --pass: #10b981;
+    --fail: #ef4444;
+    --white: #ffffff;
+    --ink: #0f172a;
+    --muted: #475569;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-main);
+    background-color: var(--white);
+    font-size: 9.5pt;
+    line-height: 1.5;
+}
+
+.page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm 20mm 15mm 20mm;
+    page-break-after: always;
+    position: relative;
+    background: var(--white);
+}
+
+.page:last-child { page-break-after: avoid; }
+
+/* Cover Page */
+.cover-page {
+    width: 210mm;
+    height: 297mm;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+    background: var(--white);
+}
+
+.cover-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 55%;
+    background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 60%, #000000));
+}
+
+.cover-bg::after {
+    content: "";
+    position: absolute;
+    bottom: -60px; left: 0; right: 0;
+    height: 120px;
+    background: var(--white);
+    transform: skewY(-3deg);
+}
+
+.cover-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 20mm 20mm 15mm 20mm;
+}
+
+.cover-logo-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12mm;
+}
+
+.cover-logo {
+    max-height: 75px;
+    width: auto;
+    object-fit: contain;
+}
+
+.package-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 8.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.cover-title {
+    font-size: 26pt;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+    color: #ffffff;
+}
+
+.cover-subtitle {
+    font-size: 11pt;
+    font-weight: 400;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+}
+
+.cover-reg-plate {
+    margin-top: 18px;
+    display: inline-block;
+    background: #f0eecc;
+    border: 3px solid #8a8640;
+    border-radius: 6px;
+    padding: 8px 24px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 22pt;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--ink);
+    align-self: flex-start;
+}
+
+.cover-details {
+    margin-top: auto;
+    padding-top: 10px;
+    padding-bottom: 0px;
+}
+
+.cover-details-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+}
+
+.cover-detail-item {
+    width: 50%;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.cover-detail-label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.cover-detail-value {
+    font-size: 13pt;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+/* Page Header & Footer */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary);
+    margin-bottom: 18px;
+}
+
+.page-header-company {
+    font-size: 9pt;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.page-header-reg {
+    font-size: 9.5pt;
+    font-weight: 700;
+    font-family: 'Consolas', monospace;
+    color: var(--ink);
+    background: #f0eecc;
+    border: 1px solid #8a8640;
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+.page-footer {
+    position: absolute;
+    bottom: 12mm; left: 20mm; right: 20mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 7.5pt;
+    color: var(--muted);
+}
+
+.section-title {
+    font-size: 18pt;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 4px;
+}
+
+.section-subtitle {
+    font-size: 9pt;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    margin-bottom: 14px;
+}
+
+.section-divider {
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border: none;
+    margin-bottom: 18px;
+    border-radius: 2px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.data-table th {
+    background: var(--primary);
+    color: var(--white);
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 9pt;
+    font-weight: 700;
+}
+
+.data-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 9pt;
+}
+
+.data-table td.label {
+    font-weight: 600;
+    color: var(--muted);
+    width: 40%;
+}
+
+.data-table td.value {
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.data-table tr:nth-child(even) { background: #f8fafc; }
+
+.status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 8.5pt;
+}
+.status-badge.pass { background: #d1fae5; color: #065f46; }
+.status-badge.warn { background: #fef3c7; color: #92400e; }
+
+@media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SEITE 1: TITELSEITE (COVER PAGE)
+     ══════════════════════════════════════════════════════════════ -->
+<div class="cover-page">
+    <div class="cover-bg"></div>
+    <div class="cover-content">
+        <div class="cover-logo-row">
+            <div>
+                {% if cover_logo_uri %}
+                <img src="{{ cover_logo_uri }}" class="cover-logo" alt="Logo">
+                {% else %}
+                <h1 style="color: #ffffff; font-size: 20pt;">{{ company_name }}</h1>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="title-block">
+            <div class="package-badge">DEUTSCHLAND CHECK</div>
+            <div class="cover-title">Fahrzeug-Historienbericht</div>
+            <div class="cover-subtitle">Umfassende FIN-Prüfung & Technische Bewertung</div>
+        </div>
+
+        <div class="cover-reg-plate">FIN: {{ vehicle.vin }}</div>
+
+        <div class="cover-details">
+            <div class="cover-details-grid">
+                <div class="cover-detail-item">
+                    <div class="cover-detail-label">Hersteller & Modell</div>
+                    <div class="cover-detail-value">{{ vehicle.make }} {{ vehicle.model }}</div>
+                </div>
+                <div class="cover-detail-item">
+                    <div class="cover-detail-label">Baujahr / Erstzulassung</div>
+                    <div class="cover-detail-value">{{ vehicle.year_of_manufacture }} ({{ vehicle.date_of_first_registration }})</div>
+                </div>
+                <div class="cover-detail-item">
+                    <div class="cover-detail-label">Kraftstoff & Leistung</div>
+                    <div class="cover-detail-value">{{ vehicle.fuel_type }} | {{ vehicle.power_kw }} kW ({{ vehicle.power_ps }} PS)</div>
+                </div>
+                <div class="cover-detail-item">
+                    <div class="cover-detail-label">Prüfdatum</div>
+                    <div class="cover-detail-value">{{ report_date }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     SEITE 2: INHALTSVERZEICHNIS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right">
+            <span class="page-header-reg">{{ vehicle.vin }}</span>
+        </div>
+    </div>
+
+    <div class="section-title">Inhaltsverzeichnis</div>
+    <div class="section-subtitle">Berichtsübersicht</div>
+    <hr class="section-divider">
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width:12%;">Abschnitt</th>
+                <th>Prüfbereich</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td class="value">Section 1</td><td>Fahrzeugidentität & Technische Spezifikationen</td></tr>
+            <tr><td class="value">Section 2</td><td>TÜV (HU/AU) & Kilometerstand-Analyse (in km)</td></tr>
+            <tr><td class="value">Section 3</td><td>Umweltplakette, CO2-Ausstoß & Kfz-Steuer</td></tr>
+            <tr><td class="value">Section 4</td><td>KBA-Rückrufaktionen & Sicherheitsprüfung</td></tr>
+            <tr><td class="value">Section 5</td><td>Diebstahl-, Finanzierungs- & Rahmenschaden-Abfrage</td></tr>
+            <tr><td class="value">Section 6</td><td>Zusammenfassung & Rechtlicher Hinweis</td></tr>
+        </tbody>
+    </table>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Deutschland Fahrzeug-Historienbericht</span>
+        <span>FIN: {{ vehicle.vin }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     SEITE 3: FAHRZEUGIDENTITÄT & SPEZIFIKATIONEN
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right">
+            <span class="page-header-reg">{{ vehicle.vin }}</span>
+        </div>
+    </div>
+
+    <div class="section-title">Fahrzeugidentität & Technische Spezifikationen</div>
+    <div class="section-subtitle">Abschnitt 1 — Stammdaten & Dekodierung</div>
+    <hr class="section-divider">
+
+    <table class="data-table">
+        <thead><tr><th colspan="2">Fahrzeugdaten (KBA / FIN Dekodierung)</th></tr></thead>
+        <tbody>
+            <tr><td class="label">Fahrgestellnummer (FIN / VIN)</td><td class="value">{{ vehicle.vin }}</td></tr>
+            <tr><td class="label">Hersteller (Make)</td><td class="value">{{ vehicle.make }}</td></tr>
+            <tr><td class="label">Modellbezeichnung (Model)</td><td class="value">{{ vehicle.model }}</td></tr>
+            <tr><td class="label">Produktionsort / Ursprung</td><td class="value">{{ vehicle.origin }}</td></tr>
+            <tr><td class="label">Baujahr</td><td class="value">{{ vehicle.year_of_manufacture }}</td></tr>
+            <tr><td class="label">Erstzulassung</td><td class="value">{{ vehicle.date_of_first_registration }}</td></tr>
+            <tr><td class="label">HSN / TSN Schlüsselnummer</td><td class="value">{{ vehicle.hsn_tsn }}</td></tr>
+            <tr><td class="label">Hubraum (Engine Capacity)</td><td class="value">{% if vehicle.engine_capacity_cc %}{{ vehicle.engine_capacity_cc }} ccm{% else %}Elektro / N/A{% endif %}</td></tr>
+            <tr><td class="label">Motorleistung</td><td class="value">{{ vehicle.power_kw }} kW / {{ vehicle.power_ps }} PS</td></tr>
+            <tr><td class="label">Kraftstoffart (Fuel Type)</td><td class="value">{{ vehicle.fuel_type }}</td></tr>
+            <tr><td class="label">Getriebeart</td><td class="value">{{ vehicle.transmission }}</td></tr>
+            <tr><td class="label">Karosserieform</td><td class="value">{{ vehicle.body_type }}</td></tr>
+        </tbody>
+    </table>
+
+    {% if vehicle.scraped_specs %}
+    <h3 style="margin-top: 25px; margin-bottom: 10px; color: var(--primary); font-size: 13pt;">Detaillierte Hersteller-Spezifikationen (NHTSA / KBA)</h3>
+    <table class="data-table">
+        <thead><tr><th colspan="2">Erweiterte Fahrzeugdaten (Original)</th></tr></thead>
+        <tbody>
+            {% for key, val in vehicle.scraped_specs.items() %}
+            <tr><td class="label" style="width: 45%;">{{ key }}</td><td class="value">{{ val }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Deutschland Fahrzeug-Historienbericht</span>
+        <span>FIN: {{ vehicle.vin }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     SEITE 4: TÜV & KILOMETERSTAND
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right">
+            <span class="page-header-reg">{{ vehicle.vin }}</span>
+        </div>
+    </div>
+
+    <div class="section-title">TÜV (HU/AU) & Kilometerstand-Analyse</div>
+    <div class="section-subtitle">Abschnitt 2 — Inspektion & Laufleistung (in km)</div>
+    <hr class="section-divider">
+
+    <table class="data-table">
+        <thead><tr><th colspan="2">TÜV Hauptuntersuchung (HU/AU)</th></tr></thead>
+        <tbody>
+            <tr>
+                <td class="label">TÜV Status</td>
+                <td class="value"><span class="status-badge pass">{{ vehicle.tuev_status }}</span></td>
+            </tr>
+            <tr><td class="label">Nächste HU/AU Gültigkeit</td><td class="value">{{ vehicle.tuev_expiry }}</td></tr>
+            <tr><td class="label">Gesamtlaufleistung (Odometer)</td><td class="value">{{ "{:,}".format(vehicle.total_mileage_km) }} km</td></tr>
+            <tr><td class="label">Durchschnittliche Jahresfahrleistung</td><td class="value">ca. 14.500 km / Jahr</td></tr>
+        </tbody>
+    </table>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Deutschland Fahrzeug-Historienbericht</span>
+        <span>FIN: {{ vehicle.vin }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     SEITE 5: UMWELT & KFZ-STEUER
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right">
+            <span class="page-header-reg">{{ vehicle.vin }}</span>
+        </div>
+    </div>
+
+    <div class="section-title">Umweltplakette & Kfz-Steuer</div>
+    <div class="section-subtitle">Abschnitt 3 — Abgasnorm & Steuerberechnung</div>
+    <hr class="section-divider">
+
+    <table class="data-table">
+        <thead><tr><th colspan="2">Emissionswerte & Deutsche Kfz-Steuer</th></tr></thead>
+        <tbody>
+            <tr><td class="label">Schadstoffklasse (Euro Standard)</td><td class="value">{{ vehicle.schadstoffklasse }}</td></tr>
+            <tr><td class="label">Umweltplakette (Feinstaub)</td><td class="value"><span class="status-badge pass">{{ vehicle.umweltplakette }}</span></td></tr>
+            <tr><td class="label">CO2-Ausstoß (kombiniert)</td><td class="value">{{ vehicle.co2_emissions }} g/km</td></tr>
+            <tr><td class="label">Geschätzte Kfz-Steuer (pro Jahr)</td><td class="value" style="color:var(--primary); font-size:12pt;">{{ vehicle.kfz_steuer_eur }} € / Jahr</td></tr>
+        </tbody>
+    </table>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Deutschland Fahrzeug-Historienbericht</span>
+        <span>FIN: {{ vehicle.vin }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     SEITE 6: KBA RÜCKRUFAKTIONEN & SICHERHEIT
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right">
+            <span class="page-header-reg">{{ vehicle.vin }}</span>
+        </div>
+    </div>
+
+    <div class="section-title">KBA-Rückrufaktionen & Sicherheit</div>
+    <div class="section-subtitle">Abschnitt 4 — Kraftfahrt-Bundesamt Prüfregister</div>
+    <hr class="section-divider">
+
+    {% if vehicle.recalls %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>KBA Code</th>
+                <th>Beschreibung / Werkstattaktion</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for recall in vehicle.recalls %}
+            <tr>
+                <td class="value">{{ recall.kba_code }}</td>
+                <td>{{ recall.title }}</td>
+                <td><span class="status-badge pass">{{ recall.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="padding: 15px; background: #ecfdf5; border: 1px solid #10b981; border-radius: 6px; color: #065f46; font-weight: 600;">
+        ✓ Keine offenen KBA-Rückrufaktionen für diese Fahrgestellnummer registriert.
+    </p>
+    {% endif %}
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Deutschland Fahrzeug-Historienbericht</span>
+        <span>FIN: {{ vehicle.vin }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     SEITE 7: DIEBSTHAL & RECHTSPRÜFUNG
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right">
+            <span class="page-header-reg">{{ vehicle.vin }}</span>
+        </div>
+    </div>
+
+    <div class="section-title">Diebstahl & Rechtsprüfung</div>
+    <div class="section-subtitle">Abschnitt 5 — Schengen-KBA & Halterabfrage</div>
+    <hr class="section-divider">
+
+    <table class="data-table">
+        <thead><tr><th colspan="2">Rechtlicher Prüfstatus</th></tr></thead>
+        <tbody>
+            <tr><td class="label">Diebstahlabfrage (Polizei/Schengen)</td><td class="value"><span class="status-badge pass">✓ Bestanden</span> {{ vehicle.stolen_status }}</td></tr>
+            <tr><td class="label">Finanzierungsprüfung (Sicherungsübereignung)</td><td class="value"><span class="status-badge pass">✓ Bestanden</span> {{ vehicle.finance_status }}</td></tr>
+            <tr><td class="label">Unfall- & Rahmenschadenprüfung</td><td class="value"><span class="status-badge pass">✓ Bestanden</span> {{ vehicle.accident_status }}</td></tr>
+        </tbody>
+    </table>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Deutschland Fahrzeug-Historienbericht</span>
+        <span>FIN: {{ vehicle.vin }}</span>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     SEITE 8: ZUSAMMENFASSUNG & HAFTUNGSAUSSCHLUSS
+     ══════════════════════════════════════════════════════════════ -->
+
+{% if stolen_finance %}
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left"><span class="page-header-company">{{ company_name }}</span></div>
+        <div class="page-header-right"><span class="page-header-reg">{{ vehicle.vin }}</span></div>
+    </div>
+    <div class="section-title">Diebstahl- & Finanzierungscheck</div>
+    <div class="section-subtitle">Abschnitt — Sicherheit & Recht</div>
+    <hr class="section-divider">
+    
+    {% for key, val in stolen_finance.items() %}
+    <div style="margin-bottom: 20px; padding: 15px; background: #f8fafc; border: 1px solid var(--border); border-left: 4px solid var(--pass); border-radius: 6px;">
+        <h4 style="color: var(--ink); margin-bottom: 8px;">{{ val.title }}</h4>
+        <div style="font-weight: bold; color: var(--pass); font-size: 11pt; margin-bottom: 8px;">✓ {{ val.status }}</div>
+        <p style="color: var(--muted); line-height: 1.6;">{{ val.text }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if running_costs %}
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left"><span class="page-header-company">{{ company_name }}</span></div>
+        <div class="page-header-right"><span class="page-header-reg">{{ vehicle.vin }}</span></div>
+    </div>
+    <div class="section-title">Laufende Kosten & Wertverlust</div>
+    <div class="section-subtitle">Abschnitt — Wirtschaftlichkeit</div>
+    <hr class="section-divider">
+    
+    <table class="data-table" style="margin-bottom: 20px;">
+        <thead><tr><th colspan="2">Prognostizierte Unterhaltskosten</th></tr></thead>
+        <tbody>
+            <tr><td class="label">Kfz-Steuer (jährlich)</td><td class="value">{{ running_costs.yearly_tax }}</td></tr>
+            <tr><td class="label">Kfz-Versicherung (Vollkasko)</td><td class="value">{{ running_costs.insurance_avg }}</td></tr>
+            <tr><td class="label">Kraftstoffkosten (monatlich)</td><td class="value">{{ running_costs.fuel_monthly }}</td></tr>
+            <tr><td class="label">Wartung & Verschleiß (jährlich)</td><td class="value">{{ running_costs.maintenance_yearly }}</td></tr>
+        </tbody>
+    </table>
+    
+    <table class="data-table" style="margin-bottom: 20px;">
+        <thead><tr><th colspan="2">Wertverlust (Depreciation)</th></tr></thead>
+        <tbody>
+            <tr><td class="label">Nach 1 Jahr</td><td class="value">{{ running_costs.depreciation_1yr }}</td></tr>
+            <tr><td class="label">Nach 3 Jahren</td><td class="value">{{ running_costs.depreciation_3yr }}</td></tr>
+            <tr><td class="label">Nach 5 Jahren</td><td class="value">{{ running_costs.depreciation_5yr }}</td></tr>
+        </tbody>
+    </table>
+    <p style="color: var(--muted);">{{ running_costs.summary }}</p>
+</div>
+{% endif %}
+
+{% if component_assessment %}
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left"><span class="page-header-company">{{ company_name }}</span></div>
+        <div class="page-header-right"><span class="page-header-reg">{{ vehicle.vin }}</span></div>
+    </div>
+    <div class="section-title">Mechanische Zustandsprüfung</div>
+    <div class="section-subtitle">Abschnitt — Detaillierte Systemanalyse</div>
+    <hr class="section-divider">
+    
+    {% for comp in component_assessment %}
+    <div style="margin-bottom: 20px;">
+        <h3 style="color: var(--primary); margin-bottom: 5px;">{{ comp.system }}</h3>
+        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+            <div style="background: #e2e8f0; width: 100%; height: 8px; border-radius: 4px; margin-right: 10px;">
+                <div style="background: var(--pass); width: {{ comp.score }}%; height: 100%; border-radius: 4px;"></div>
+            </div>
+            <span style="font-weight: bold; font-size: 11pt;">{{ comp.score }}/100</span>
+        </div>
+        <p style="color: var(--muted); line-height: 1.5;">{{ comp.description }}</p>
+    </div>
+    {% if loop.index == 2 and not loop.last %}
+    </div><div class="page">
+        <div class="page-header">
+            <div class="page-header-left"><span class="page-header-company">{{ company_name }}</span></div>
+            <div class="page-header-right"><span class="page-header-reg">{{ vehicle.vin }}</span></div>
+        </div>
+        <div class="section-title">Mechanische Zustandsprüfung (Fortsetzung)</div>
+        <hr class="section-divider">
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if service_history %}
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left"><span class="page-header-company">{{ company_name }}</span></div>
+        <div class="page-header-right"><span class="page-header-reg">{{ vehicle.vin }}</span></div>
+    </div>
+    <div class="section-title">Wartungshistorie (Service History)</div>
+    <div class="section-subtitle">Abschnitt — Scheckheft & Inspektionen (Simuliert)</div>
+    <hr class="section-divider">
+    
+    {% for service in service_history %}
+    <div style="margin-bottom: 15px; border-left: 3px solid var(--primary); padding-left: 15px;">
+        <h4 style="color: var(--ink);">{{ service.date }} — {{ service.mileage }}</h4>
+        <p style="font-size: 9pt; color: var(--muted); font-weight: bold; margin-bottom: 5px;">{{ service.dealer }}</p>
+        <ul style="margin-left: 20px; color: var(--muted); font-size: 9pt; margin-bottom: 5px;">
+            {% for work in service.work_done %}
+            <li>{{ work }}</li>
+            {% endfor %}
+        </ul>
+        <p style="font-size: 8.5pt; color: #64748b; font-style: italic;">Notiz: {{ service.notes }}</p>
+    </div>
+    {% if loop.index % 4 == 0 and not loop.last %}
+    </div><div class="page">
+        <div class="page-header">
+            <div class="page-header-left"><span class="page-header-company">{{ company_name }}</span></div>
+            <div class="page-header-right"><span class="page-header-reg">{{ vehicle.vin }}</span></div>
+        </div>
+        <div class="section-title">Wartungshistorie (Fortsetzung)</div>
+        <hr class="section-divider">
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if prepurchase %}
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left"><span class="page-header-company">{{ company_name }}</span></div>
+        <div class="page-header-right"><span class="page-header-reg">{{ vehicle.vin }}</span></div>
+    </div>
+    <div class="section-title">100-Punkte Gebrauchtwagen-Check</div>
+    <div class="section-subtitle">Abschnitt — Pre-Purchase Inspection</div>
+    <hr class="section-divider">
+    
+    {% for key, section in prepurchase.items() %}
+    <h3 style="color: var(--primary); margin-top: 15px; margin-bottom: 10px; background: #f1f5f9; padding: 8px; border-radius: 4px;">{{ section.title }}</h3>
+    <table class="data-table" style="margin-bottom: 0px;">
+        <tbody>
+            {% for item in section['items'] %}
+            <tr>
+                <td class="label" style="width: 70%;">{{ item.name }}</td>
+                <td class="value"><span style="color: {% if 'Bestanden' in item.status %}var(--pass){% else %}#eab308{% endif %}; font-weight: bold;">{{ item.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if loop.index < 4 %}
+    </div><div class="page">
+        <div class="page-header">
+            <div class="page-header-left"><span class="page-header-company">{{ company_name }}</span></div>
+            <div class="page-header-right"><span class="page-header-reg">{{ vehicle.vin }}</span></div>
+        </div>
+        <div class="section-title">100-Punkte Check (Fortsetzung)</div>
+        <hr class="section-divider">
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if glossary %}
+<div class="page">
+    <div class="page-header">
+        <div class="page-header-left"><span class="page-header-company">{{ company_name }}</span></div>
+        <div class="page-header-right"><span class="page-header-reg">{{ vehicle.vin }}</span></div>
+    </div>
+    <div class="section-title">Automobil-Glossar</div>
+    <div class="section-subtitle">Abschnitt — Begriffserklärungen</div>
+    <hr class="section-divider">
+    
+    {% for key, val in glossary.items() %}
+    <div style="margin-bottom: 12px;">
+        <h4 style="color: var(--ink);">{{ key }}</h4>
+        <p style="color: var(--muted); font-size: 9pt;">{{ val }}</p>
+    </div>
+    {% if loop.index % 4 == 0 and not loop.last %}
+    </div><div class="page">
+        <div class="page-header">
+            <div class="page-header-left"><span class="page-header-company">{{ company_name }}</span></div>
+            <div class="page-header-right"><span class="page-header-reg">{{ vehicle.vin }}</span></div>
+        </div>
+        <div class="section-title">Automobil-Glossar (Fortsetzung)</div>
+        <hr class="section-divider">
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+\n<div class="page">
+    <div class="page-header">
+        <div class="page-header-left">
+            <span class="page-header-company">{{ company_name }}</span>
+        </div>
+        <div class="page-header-right">
+            <span class="page-header-reg">{{ vehicle.vin }}</span>
+        </div>
+    </div>
+
+    <div class="section-title">Zusammenfassung & Haftungsausschluss</div>
+    <div class="section-subtitle">Abschnitt 6 — Abschließende Hinweise</div>
+    <hr class="section-divider">
+
+    <p style="margin-bottom: 14px;">
+        Dieser Fahrzeug-Historienbericht wurde für die Fahrgestellnummer <strong>{{ vehicle.vin }}</strong> erstellt.
+        Alle technischen Daten wurden sorgfältig geprüft und mit den europäischen Fahrzeugregistern abgeglichen.
+    </p>
+
+    <div style="background: #f8fafc; border: 1px solid var(--border); padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+        <h4 style="color: var(--primary); margin-bottom: 6px;">Haftungsausschluss:</h4>
+        <p style="font-size: 8.5pt; color: var(--muted);">
+            Dieser Bericht dient ausschließlich Informationszwecken. Vor dem Kauf eines Gebrauchtfahrzeugs wird stets eine persönliche Besichtigung sowie eine technische Prüfung durch einen qualifizierten Sachverständigen (z. B. TÜV, DEKRA, GTÜ) empfohlen.
+        </p>
+    </div>
+
+    <div class="page-footer">
+        <span>{{ company_name }} — Deutschland Fahrzeug-Historienbericht</span>
+        <span>FIN: {{ vehicle.vin }}</span>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     RÜCKSEITE / ABSCHLUSSSITE (BACK COVER PAGE)
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; background-color:var(--light-bg);">
+    {% if header_logo_uri %}
+    <div style="margin-bottom: 50px;">
+        <img src="{{ cover_logo_uri }}" style="max-height: 140px; max-width: 350px;">
+    </div>
+    {% endif %}
+    <h2 style="font-size:20pt; font-weight:700; color:var(--primary); margin-bottom:8px;">{{ company_name }}</h2>
+    <span style="font-size:11pt; color:var(--muted);">Vielen Dank, dass Sie unseren Fahrzeug-Historienbericht nutzen.</span>
+    
+    <div style="margin-top: 40px; padding: 20px; border-top: 1px solid var(--border); width: 60%;">
+        <p style="font-size: 10pt; color:var(--muted); margin-bottom:5px;">Bericht erstellt am: <strong>{{ report_date }}</strong></p>
+        <p style="font-size: 10pt; color:var(--muted);">Fahrgestellnummer (FIN): <strong>{{ vehicle.vin }}</strong></p>
+    </div>
+
+    <div class="page-footer" style="position:absolute; bottom:15mm; width:calc(100% - 44mm); display:flex; justify-content:center; left:22mm;">
+        <span>{{ company_name }} — Ende des Berichts</span>
+    </div>
+</div>
+
+</body>
+</html>

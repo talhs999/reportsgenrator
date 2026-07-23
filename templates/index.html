@@ -39,14 +39,25 @@
         <!-- ── Form Card ────────────────────────────────────── -->
         <form id="reportForm" class="report-form" enctype="multipart/form-data">
             
-            <!-- Step 1: Registration -->
+            <!-- Step 1: Country & Vehicle Registration/VIN -->
             <div class="form-section">
                 <div class="section-label">
                     <span class="step-number">1</span>
-                    <span>Vehicle Registration</span>
+                    <span>Select Country & Enter Vehicle Code</span>
                 </div>
+
+                <div class="country-tabs">
+                    <button type="button" class="country-tab active" id="tab-uk" data-country="uk" onclick="switchCountry('uk')">
+                        <span class="tab-flag">🇬🇧</span> UK Check (VRM)
+                    </button>
+                    <button type="button" class="country-tab" id="tab-de" data-country="de" onclick="switchCountry('de')">
+                        <span class="tab-flag">🇩🇪</span> Germany Check (VIN)
+                    </button>
+                </div>
+                <input type="hidden" id="country" name="country" value="uk">
+
                 <div class="reg-input-wrapper">
-                    <div class="reg-plate-icon">GB</div>
+                    <div class="reg-plate-icon" id="plateIcon">GB</div>
                     <input 
                         type="text" 
                         id="registration" 
@@ -54,12 +65,12 @@
                         class="reg-input"
                         placeholder="AB12 CDE"
                         required
-                        maxlength="8"
+                        maxlength="17"
                         autocomplete="off"
                         spellcheck="false"
                     >
                 </div>
-                <p class="input-hint">Enter the UK registration number (e.g., AB12CDE, AB12 CDE)</p>
+                <p class="input-hint" id="inputHint">Enter the UK registration number (e.g., AB12CDE, AB12 CDE)</p>
             </div>
 
             <!-- Step 2: Package Selection -->
@@ -258,6 +269,6 @@
         </footer>
     </div>
 
-    <script src="/static/js/app.js"></script>
+    <script src="/static/js/app.js?v=3"></script>
 </body>
 </html>
